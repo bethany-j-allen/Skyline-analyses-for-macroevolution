@@ -1,19 +1,15 @@
 ---
-author: Author I. Name
+author: Bethany J. Allen
 level: Intermediate
-title: Tutorial template
-subtitle: Template for an empty tutorial
-beastversion: 2.4.2
+title: Skyline analyses for macroevolution
+subtitle: Applying BDSKY to species-level phylogenies
+beastversion: 2.6.6
 ---
 
 
 # Background
 
-This is a template tutorial and style guide to help formatting Markdown tutorials. 
-
-Please start the tutorial by adding some background about the tutorial in this section, clearly explaining the question/problem and the type of analysis that the methods in the tutorial should be used for. In the next section please add a short description of all the programs or packages used in the tutorial. The tutorial exercise should follow this part. Please add a short explanation on the dataset used in the tutorial before starting with the exercise. Please also add a section after the exercise interpreting the results. End your tutorial with some useful links.
-
-Some of the text in this tutorial template is just dummy filler text. Please do not try to understand it.
+Bayesian phylodynamics uses the shape of a phylogenetic tree to infer characteristics of the population described by the phylogeny. Although widely applied to epidemiological datasets (see Skyline plots tutorial), the approach is yet to be used widely in macroevolution. In this case, skyline methods can be used to estimate parameters such as speciation, extinction and sampling rates over time, as well as the total number of lineages (usually species diversity). In this tutorial, we demonstrate how to apply the exponential coalescent and fossilised-birth-death skyline models, which both estimate piecewise-constant evolutionary rates through time, to a dinosaur supertree. The models differ in the temporal direction in which they are applied, and the assumptions they make about how the phylogeny is sampled.
 
 ----
 
@@ -21,11 +17,15 @@ Some of the text in this tutorial template is just dummy filler text. Please do 
 
 ### BEAST2 - Bayesian Evolutionary Analysis Sampling Trees 2
 
-BEAST2 is a free software package for Bayesian evolutionary analysis of molecular sequences using MCMC and strictly oriented toward inference using rooted, time-measured phylogenetic trees {% cite Bouckaert2014 --file Tutorial-Template/master-refs.bib %}. This tutorial uses the BEAST2 version 2.4.2.
+BEAST2 is a free software package for Bayesian evolutionary analysis of molecular sequences using MCMC and strictly oriented toward inference using rooted, time-measured phylogenetic trees {% cite Bouckaert2014 --file Tutorial-Template/master-refs.bib %}. This tutorial uses the BEAST2 version 2.6.6.
+
+
 
 ----
 
 # Practical: Exercise title
+
+Please add a short explanation on the dataset used in the tutorial before starting with the exercise. Please also add a section after the exercise interpreting the results. End your tutorial with some useful links.
 
 Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce porta augue id vulputate iaculis. Sed non posuere lectus. Integer at magna quis nulla tempus cursus. Integer ut nisl elit. Nam pellentesque pharetra orci eu facilisis. Nullam vitae leo tempus nunc consequat finibus ut ut nisi. Phasellus vitae faucibus dolor, id venenatis lacus. Sed eu lacus a nibh luctus semper. Proin non tellus odio. Duis elementum lorem eget nisl rhoncus feugiat. In hendrerit vehicula purus. Aliquam ornare libero quis tincidunt efficitur. Nam sapien augue, mattis nec hendrerit ut, commodo in nisi.
 
