@@ -48,11 +48,25 @@ The aim of this tutorial is to:
 We will be inferring our skyline parameters using a ready-made phylogeny containing 420 dinosaur species, published by {% cite Lloyd2008 --file Tutorial-Template/master-refs.bib %}. This phylogeny is a 'supertree', created using an informal method to collate several smaller dinosaur phylogenies into a larger one. Supertrees are typically cladograms, and must be timescaled using fossil data to estimate their branch lengths. The branch lengths we use here were inferred by {% cite Sakamoto2016 --file Tutorial-Template/master-refs.bib %}: they used fossil occurrences from the [Paleobiology Database] (paleobiodb.org) to infer the midpoint of the temporal range of each tip, and timescaled the phylogeny using the "equal" method.
 
 ## Creating an xml template with BEAUti
+Many of the features we will need in our xml files are currently not implemented in BEAUti. However, we will start our analyses by creating an xml in BEAUti which will then serve as a template for us to alter by hand ("hack") later.
 
 ### Install BEAST2 packages
+The coalescent-based skyline model is included in the core of BEAST2, but we need to install the BDSKY package, which contains the birth-death skyline model. We will also need the feast package, which will allow us to integrate some more complex features into our xml. Installation of packages is done using the package manager, which is integrated into BEAUti.
 
-### This is a sub-subsection
-Etiam posuere urna ut condimentum sagittis. Suspendisse posuere, ex nec eleifend fringilla, nisl augue posuere augue, elementum mollis justo felis sed purus. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Mauris efficitur eros ut turpis elementum vestibulum. Sed sit amet nisi at nunc luctus laoreet id ac enim. Aliquam elementum risus id urna dictum fringilla. Aenean lobortis, risus euismod molestie pulvinar, massa odio pharetra nulla, vitae facilisis neque magna sed lorem. Praesent ipsum enim, commodo ut pharetra in, sollicitudin ac massa. Donec et interdum mauris. Ut molestie, risus quis fermentum placerat, diam risus posuere nisi, eget viverra tortor neque ac sem. Donec viverra magna non dolor aliquam, in suscipit massa facilisis. Suspendisse congue arcu sed risus consectetur commodo. Aenean metus odio, volutpat at tincidunt id, ullamcorper in dui. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Cras ut sem in odio sodales iaculis non quis neque.
+>Open the **BEAST2 Package Manager** by navigating to **File > Manage Packages**.
+>
+>Install the **BDSKY** and **feast** packages by selecting them and clicking the **Install/Upgrade** button one at a time.
+
+After the installation of a package, the program is on your computer, but BEAUti is unable to load the template files for the newly installed packages unless it is restarted.
+
+>Close the **BEAST2 Package Manager** and **_restart_** BEAUti to fully load the **BDSKY** and **feast** packages.
+
+### Setting up the Exponential Coalescent skyline analysis
+
+
+### Setting up the Fossilised-Birth-Death skyline analysis
+
+
 
 -------
 
