@@ -45,7 +45,7 @@ The aim of this tutorial is to:
 - Highlight the differences between exponential coalescent and fossilised-birth-death skylines.
 
 ## The data
-We will be inferring our skyline parameters using a ready-made phylogeny containing 420 dinosaur species, published by {% cite Lloyd2008 --file Tutorial-Template/master-refs.bib %}. This phylogeny is a 'supertree', created using an informal method to collate several smaller dinosaur phylogenies into a larger one. Supertrees are typically cladograms, and must be timescaled using fossil data to estimate their branch lengths. The branch lengths we use here were inferred by {% cite Sakamoto2016 --file Tutorial-Template/master-refs.bib %}: they used fossil occurrences from the [Paleobiology Database] (paleobiodb.org) to infer the midpoint of the temporal range of each tip, and timescaled the phylogeny using the "equal" method.
+We will be inferring our skyline parameters using a ready-made phylogeny containing 420 dinosaur species, published by {% cite Lloyd2008 --file Tutorial-Template/master-refs.bib %}. This phylogeny is a 'supertree', created using an informal method to collate several smaller dinosaur phylogenies into a larger one. Supertrees are typically cladograms, and must be timescaled using fossil data to estimate their branch lengths. The branch lengths we use here were inferred by {% cite Sakamoto2016 --file Tutorial-Template/master-refs.bib %}: they used fossil occurrences from the [Paleobiology Database] (paleobiodb.org) to infer the midpoint of the temporal range of each tip, and timescaled the phylogeny using the "equal" method, which distributes time evenly between the available branches.
 
 ## Creating an xml template with BEAUti
 Many of the features we will need in our xml files are currently not implemented in BEAUti. However, we will start our analyses by creating an xml in BEAUti which will then serve as a template for us to alter by hand ("hack") later.
@@ -61,10 +61,13 @@ After the installation of a package, the program is on your computer, but BEAUti
 
 >Close the **BEAST2 Package Manager** and **_restart_** BEAUti to fully load the **BDSKY** and **feast** packages.
 
+### Setting up the Fossilised-Birth-Death skyline analysis
+The first step in setting up an analysis in BEAUti is to upload an alignment. In our case, we do not have an alightment as we are using a ready-made phylogeny instead, but we will still need to upload an alignment in order to initialise our xml. We have provided a dummy `.nexus` file for this purpose, which we will replace later with code that reads in our phylogeny.
+
+>In the **Partitions** panel, import the nexus file with the alignment by navigating to **File > Import Alignment** in the menu and then finding the `empty.nexus` file on your computer, *or* drag and drop the file into the **BEAUti** window.
+
 ### Setting up the Exponential Coalescent skyline analysis
 
-
-### Setting up the Fossilised-Birth-Death skyline analysis
 
 
 
