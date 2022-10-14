@@ -102,7 +102,30 @@ We can now start "hacking" our XML template to remove the content we don't need 
 
 >Open `dinosaur_BDSKY.xml` in your preferred text editor.
 
+The first line sets out information about the format of the xml and information about its contents, which we can ignore. The next section is labelled `data`, and contains our dummy alignment. We don't need this section, so it can be commented out (<!-- at the start, and --> at the end), or simply deleted.
 
+>Remove the `data` section of the XML:
+>
+>```xml
+>    <data
+> id="empty"
+> spec="Alignment"
+> name="alignment">
+>                     <sequence id="seq_Tyrannosaurus_rex" spec="Sequence" taxon="Tyrannosaurus_rex" totalcount="4" value="N"/>
+>                 </data>
+>```
+
+In it's place, we instead need to read in our phylogeny. We will do this by pasting in a new section, `tree`, which will use `TreeFromNewickFile` in the package **feast** to retrieve the phylogeny from our tree file, `Lloyd.tree`.
+
+>Where the `data` section was in the XML, paste in the `tree` section:
+>
+>```xml
+>  <tree id="tree"
+>        spec="feast.fileio.TreeFromNewickFile" fileName="Lloyd.tree"
+>        IsLabelledNewick="true" adjustTipHeights="false" />
+>```
+
+The section after this contains a block of statements labelled `map`, which links the different distributions we might use (for example, for our priors) to the BEAST2 code which defines them. We will leave this alone, and move on to the largest and final block, `run`, which describes the analysis we want to carry out.
 
 ### Setting up the Exponential Coalescent skyline analysis
 
