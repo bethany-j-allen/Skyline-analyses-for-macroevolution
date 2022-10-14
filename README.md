@@ -127,6 +127,57 @@ In it's place, we instead need to read in our phylogeny. We will do this by past
 
 The section after this contains a block of statements labelled `map`, which links the different distributions we might use (for example, for our priors) to the BEAST2 code which defines them. We will leave this alone, and move on to the largest and final block, `run`, which describes the analysis we want to carry out.
 
+The first subsection within the `run` block is labelled `state`. This describes the objects inferred within the analysis. The first object described is the `tree`, based on our dummy alignment. As we are not inferring our tree, it can be removed from this section.
+
+>Remove the `tree` part of the `state` subsection of the XML:
+>
+>```xml
+>        <tree id="Tree.t:empty" spec="beast.evolution.tree.Tree" name="stateNode">
+>            <taxonset id="TaxonSet.empty" spec="TaxonSet">
+>                <alignment idref="empty"/>
+>            </taxonset>
+>        </tree>
+>```
+
+Following this we see a description of our three inferred rates: birth, death and sampling. These lines include a lot of information, much of which we specified earlier via the **Priors** tab in BEAUti. As previously mentioned, our sampling parameter is currently set up as the extant sampling proportion, `rho`, which we want to exchange for a fossil sampling rate, `sampling`. For the sake of transparency, we will change the `id` (name) of our sampling parameter here from `rhoBDS` to `samplingBDS`. Here, this is simply a label and does not change what the parameter does, but it is how the parameter is referenced in other parts of the XML, where its name will also need to be changed.
+
+>Replace all instances of `rho` in the XML with `sampling`. There should be eight. This is most easily (and reliably) done using `Find & Replace` functionality.
+
+To our three rates we will also add a fourth parameter, `origin`. This describes the time at which the most recent common ancestor of the clade diverged into its first two daughter species, i.e. the start of our evolutionary processes. Note that we want to infer this time because it is only the same as the timing of the first divergence in our sampled phylogeny if both of those initial species are represented in its tips. If this is not the case, the "true" origin must lie an unknown amount of time earlier than this first observed divergence.
+
+In this section we need to set the limits of our origin time and its initial value. BEAST2 assumes that time runs from the present backwards (as is the case in our **Exponential Coalescent** model), so we will set our origin's lower limit to 0 (the age of the youngest tip), and to be maximally conservative, its upper limit to `Infinity`. We will set the starting value to 200 (200 million years before the youngest tip), which corresponds to an age of approximately 200 + 66 = 266Ma (if our youngest tip lies at the Cretaceous-Paleogene boundary, when non-avian dinosaurs are thought to have become extinct). This would place the origin of dinosaurs during the middle Permian, which is perhaps a little earlier than most palaeontologists would speculate (late Permian to Early Triassic, e.g. ADD CITATION), but is certainly adequate for our first iteration.
+
+>Paste in the `origin` line to the end of the `parameter`block:
+>
+>`<parameter id="origin.t:empty" spec="parameter.RealParameter" lower="0.0" name="stateNode" upper="Infinity">200</parameter>`
+>
+>The `state` block should now look like this:
+>
+>```xml
+><state id="state" spec="State" storeEvery="5000">
+>        <parameter id="birthRateBDS.t:empty" spec="parameter.RealParameter" dimension="4" lower="0.0" name="stateNode" upper="Infinity">1.0</parameter>
+>        <parameter id="deathRateBDS.t:empty" spec="parameter.RealParameter" dimension="4" lower="0.0" name="stateNode" upper="Infinity">1.0</parameter>
+>        <parameter id="samplingBDS.t:empty" spec="parameter.RealParameter" dimension="4" lower="0.0" name="stateNode" upper="Infinity">0.5</parameter>
+>	 <parameter id="origin.t:empty" spec="parameter.RealParameter" lower="0.0" name="stateNode" upper="Infinity">200</parameter>
+></state>
+>```
+
+Note that each of our rate parameters have 4 **dimensions** but we do not specify this value for our origin; while our **piecewise constant** rates can change three times in each iteration (resulting in four fixed values), only a single origin value is needed, and we therefore do not need to specify its number of dimensions (as 1).
+
+The next block, `init`, describes the initialisation processes, namely construction of the starting tree and population model, neither of which we need.
+
+>Remove the `init` subsection of the XML:
+>
+>```xml
+>    <init id="RandomTree.t:empty" spec="beast.evolution.tree.RandomTree" estimate="false" initial="@Tree.t:empty" taxa="@empty">
+>        <populationModel id="ConstantPopulation0.t:empty" spec="ConstantPopulation">
+>            <parameter id="randomPopSize.t:empty" spec="parameter.RealParameter" name="popSize">1.0</parameter>
+>        </populationModel>
+>    </init>
+>```
+
+
+
 ### Setting up the Exponential Coalescent skyline analysis
 
 
