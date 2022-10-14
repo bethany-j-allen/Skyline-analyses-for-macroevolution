@@ -76,7 +76,7 @@ Most of the default tabs in BEAUti relate to inferring the phylogeny, which we w
 
 >Select the **Priors** tab and choose **Birth Death Skyline BDSParam** as the tree prior.
 
-The "standard" `contemporary` birth death skyline is parameterised using a reproductive number, a "become uninfectious" rate and a sampling proportion. However, here we are using the `BDSParam` model, which refers to parameterisation using a birth rate, a death rate and an extant sampling proportion. As our phylogeny is for non-avian dinosaurs, for which we only have fossils and no extant (genetic) samples, we will later exchange the extant sampling proportion, usually denoted using {% eqinline rho %}, for a fossil sampling rate, usually denoted using {% eqinline psi %}.
+The "standard" `contemporary` birth death skyline is parameterised using a reproductive number, a "become uninfectious" rate and a sampling proportion. However, here we are using the `BDSParam` model, which refers to parameterisation using a birth rate (here, speciation), a death rate (here, extinction) and an extant sampling proportion. As our phylogeny is of non-avian dinosaurs, for which we only have fossils and no extant (genetic) samples, we will later exchange the extant sampling proportion, usually denoted using {% eqinline rho %}, for a fossil sampling rate, usually denoted using {% eqinline psi %}.
 
 Choosing sensible priors for these parameters is not straightforward, so we will select priors which are relatively unrestrictive. For the birth and death rates, we will use exponential priors with a mean of 1.0; this places more probability on small rates, but still permits rates which are towards the higher end of those estimated from living animals and plants {% cite HenaoDiaz2019 --file Tutorial-Template/master-refs.bib %}. For the sampling rate, we will also choose an exponential prior, this time with a mean of 0.2.
 
@@ -102,7 +102,7 @@ We can now start "hacking" our XML template to remove the content we don't need 
 
 >Open `dinosaur_BDSKY.xml` in your preferred text editor.
 
-The first line sets out information about the format of the xml and information about its contents, which we can ignore. The next section is labelled `data`, and contains our dummy alignment. We don't need this section, so it can be commented out or simply deleted.
+The first line sets out information about the format of the xml and its contents, which we can ignore. The next section is labelled `data`, and contains our dummy alignment. We don't need this section, so it can be commented out or simply deleted.
 
 >Remove the `data` section of the XML:
 >
@@ -139,7 +139,7 @@ The first subsection within the `run` block is labelled `state`. This describes 
 >        </tree>
 >```
 
-Following this we see a description of our three inferred rates: birth, death and sampling. These lines include a lot of information, much of which we specified earlier via the **Priors** tab in BEAUti. As previously mentioned, our sampling parameter is currently set up as the extant sampling proportion, `rho`, which we want to exchange for a fossil sampling rate, `sampling`. For the sake of transparency, we will change the `id` (name) of our sampling parameter here from `rhoBDS` to `samplingBDS`. Here, this is simply a label and does not change what the parameter does, but it is how the parameter is referenced in other parts of the XML, where its name will also need to be changed.
+Following this we see a description of our three inferred rates: birth, death and sampling. These lines include a lot of information, much of which we specified earlier via the **Priors** tab in BEAUti. As previously mentioned, our sampling parameter is currently set up as the extant sampling proportion, `rho`, which we want to exchange for a fossil sampling rate, `sampling`. For the sake of readability, we will change the `id` (name) of our sampling parameter here from `rhoBDS` to `samplingBDS`. Here, this is simply a label and does not change what the parameter does, but it is how the parameter is referenced in other parts of the XML, where its name will also need to be changed.
 
 >Replace all instances of `rho` in the XML with `sampling`. There should be eight. This is most easily (and reliably) done using `Find & Replace` functionality.
 
@@ -176,6 +176,33 @@ The next block, `init`, describes the initialisation processes, namely construct
 >    </init>
 >```
 
+The next block of the XML is arguably the most important: it defines the prior and posterior distributions of our analysis, including the model we are using. The model itself lies in the third nested `distribution` line, labelled `BirthDeathSkyContemporaryBDSParam`. With the addition of line breaks to aid readability, it should currently look like this:
+	```xml
+	<distribution id="BirthDeathSkyContemporaryBDSParam.t:empty"
+                          spec="beast.evolution.speciation.BirthDeathSkylineModel"
+                          birthRate="@birthRateBDS.t:empty"
+                          conditionOnRoot="true"
+                          contemp="true"
+                          deathRate="@deathRateBDS.t:empty"
+                          rho="@rhoBDS.t:empty"
+                          tree="@Tree.t:empty">
+	```
+Although perhaps initially intimidating, we will walk through the various arguments here and what they mean. The model will also require some tweaking to fit our intended usage.
+
+The first thing to note is that we're linking the parameters we defined earlier into the model. For example, `birthRate="@birthRateBDS.t:empty"` is simply telling the model the name we have given to our birth rate parameter. This is also true for `deathRate`. If you successfully changed all of the `rho` references to `sampling` earlier, you should also see that `sampling="@samplingBDS.t:empty"`. The name of the argument in the model is actually `samplingRate`, so we will correct that now.
+
+>Change `sampling="@samplingBDS.t:empty"` to `samplingRate="@samplingBDS.t:empty"`.
+		
+We also need to link the origin parameter (which we defined earlier) into the model.
+		
+>Somewhere within the model line, add `origin="origin.t:empty"`.
+		
+The next argument to note is `conditionOnRoot="true"`. Whenever we conduct a Bayesian phylogenetic or phylodynamic analysis, we have to choose a single facet of the model which will remain fixed in some way, for all of the other parameters to move around. We describe the model as being **conditioned** on this value. Here we can see that the default value to condition on is the age of the origin (or root); as discussed earlier, this means assuming that the first divergence in our sampled phylogeny represents the "true" origin time. This might be a reasonable assumption for a well-sampled phylogeny which ideally incorporates both fossil and extant taxa, but that is not the case here, which is why we have instead chosen to infer our origin time. We must therefore choose something else to condition the model on.
+		
+Another option is to condition on ensuring that the model produces at least one sample (is observable). Depending on the type of sampling used, we can either use `conditionOnRhoSampling` or `conditionOnSurvival`: the former assumes at least one extant sample, while the latter assumes at least one sample of either type, be it an extant sample or an observed fossil. As our phylogeny of non-avian dinosaurs only includes extinct species, we will set these to "false" and "true" respectively.
+		
+>Change `conditionOnRoot="true"` to `conditionOnSurvival="true" conditionOnRhoSampling="false"`.
+		
 
 
 ### Setting up the Exponential Coalescent skyline analysis
