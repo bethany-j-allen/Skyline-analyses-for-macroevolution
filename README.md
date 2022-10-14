@@ -102,7 +102,7 @@ We can now start "hacking" our XML template to remove the content we don't need 
 
 >Open `dinosaur_BDSKY.xml` in your preferred text editor.
 
-The first line sets out information about the format of the xml and information about its contents, which we can ignore. The next section is labelled `data`, and contains our dummy alignment. We don't need this section, so it can be commented out (<!-- at the start, and --> at the end), or simply deleted.
+The first line sets out information about the format of the xml and information about its contents, which we can ignore. The next section is labelled `data`, and contains our dummy alignment. We don't need this section, so it can be commented out or simply deleted.
 
 >Remove the `data` section of the XML:
 >
