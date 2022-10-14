@@ -23,7 +23,11 @@ Bayesian phylodynamics uses the shape of a phylogenetic tree to infer characteri
 
 BEAUti2 is a graphical user interface tool for generating BEAST2 XML configuration files.
 
-Both BEAST2 and BEAUti2 are Java programs, which means that the exact same code runs on all platforms. For us it simply means that the interface will be the same on all platforms. The screenshots used in this tutorial are taken on a Mac OS X computer; however, both programs will have the same layout and functionality on both Windows and Linux. BEAUti2 is provided as a part of the BEAST2 package so you do not need to install it separately.
+Both BEAST2 and BEAUti2 are Java programs, which means that the exact same code runs, and the interface will be the same, on all computing platforms. The screenshots used in this tutorial are taken on a Mac OS X computer; however, both programs will have the same layout and functionality on both Windows and Linux. BEAUti2 is provided as a part of the BEAST2 package so you do not need to install it separately.
+
+### Any programmer-friendly text editor
+
+We will need to edit the XML files produced by BEAUti, for which we'll need a text editor. It's best to use one designed for programmers as these include nice features such as colouring code, which makes it more reader-friendly.
 
 ### Tracer
 
@@ -31,7 +35,7 @@ Both BEAST2 and BEAUti2 are Java programs, which means that the exact same code 
 
 ### R / RStudio
 
-We will be using R to analyze the output of the Birth-Death Skyline plot. RStudio provides a user-friendly graphical user interface to R that makes it easier to edit and run scripts. (It is not necessary to use RStudio for this tutorial).
+We will be using R to analyze the output of the Birth-Death Skyline plot. RStudio provides a user-friendly graphical user interface to R that makes it easier to edit and run scripts. (It is not necessary to use RStudio for this tutorial.)
 
 ----
 
@@ -41,17 +45,17 @@ In this tutorial we will estimate diversification rates for dinosaurs using a pr
 
 The aim of this tutorial is to:
 - Learn how to set up a skyline analysis using a previously made phylogeny;
-- Develop skills in simple xml hacking;
+- Develop skills in simple XML hacking;
 - Highlight the differences between exponential coalescent and fossilised-birth-death skylines.
 
 ## The data
 We will be inferring our skyline parameters using a ready-made phylogeny containing 420 dinosaur species, published by {% cite Lloyd2008 --file Tutorial-Template/master-refs.bib %}. This phylogeny is a 'supertree', created using an informal method to collate several smaller dinosaur phylogenies into a larger one. Supertrees are typically cladograms, and must be timescaled using fossil data to estimate their branch lengths. The branch lengths we use here were inferred by {% cite Sakamoto2016 --file Tutorial-Template/master-refs.bib %}: they used fossil occurrences from the [Paleobiology Database] (http://paleobiodb.org) to infer the midpoint of the temporal range of each tip, and timescaled the phylogeny using the "equal" method, which distributes time evenly between the available branches.
 
-## Creating an xml template with BEAUti
-Many of the features we will need in our xml files are currently not implemented in BEAUti. However, we will start our analyses by creating an xml in BEAUti which will then serve as a template for us to alter by hand ("hack") later.
+## Creating an XML template with BEAUti
+Many of the features we will need in our XML files are currently not implemented in BEAUti. However, we will start our analyses by creating XML files in BEAUti which will then serve as a template for us to alter by hand ("hack") later.
 
 ### Install BEAST2 packages
-The coalescent-based skyline model is included in the core of BEAST2, but we need to install the **BDSKY** package, which contains the birth-death skyline model. We will also need the **feast** package, which will allow us to integrate some more complex features into our xml. Installation of packages is done using the package manager, which is integrated into BEAUti.
+The coalescent-based skyline model is included in the core of BEAST2, but we need to install the **BDSKY** package, which contains the birth-death skyline model. We will also need the **feast** package, which will allow us to integrate some more complex features into our analyses. Installation of packages is done using the package manager, which is integrated into BEAUti.
 
 >Open the **BEAST2 Package Manager** by navigating to **File > Manage Packages**.
 >
@@ -62,7 +66,7 @@ After the installation of a package, the program is on your computer, but BEAUti
 >Close the **BEAST2 Package Manager** and **_restart_** BEAUti to fully load the **BDSKY** and **feast** packages.
 
 ### Setting up the Fossilised-Birth-Death skyline analysis
-The first step in setting up an analysis in BEAUti is to upload an alignment. In our case, we do not have an alightment as we are using a ready-made phylogeny instead, but we will still need to upload an alignment in order to initialise our xml. We have provided a dummy `.nexus` file for this purpose, which we will replace later with code that reads in our phylogeny.
+The first step in setting up an analysis in BEAUti is to upload an alignment. In our case, we do not have an alignment as we are using a ready-made phylogeny instead, but we will still need to upload an alignment in order to initialise our XML. We have provided a dummy `.nexus` file for this purpose, which we will replace later with code that reads in our phylogeny.
 
 >In the **Partitions** panel, import the nexus file with the empty alignment by navigating to **File > Import Alignment** in the menu and then finding the `empty.nexus` file on your computer, *or* drag and drop the file into the **BEAUti** window.
 
@@ -76,13 +80,27 @@ The "standard" `contemporary` birth death skyline is parameterised using a repro
 
 Choosing sensible priors for these parameters is not straightforward, so we will select priors which are relatively unrestrictive. For the birth and death rates, we will use exponential priors with a mean of 1.0; this places more probability on small rates, but still permits rates which are towards the higher end of those estimated from living animals and plants {% cite HenaoDiaz2019 --file Tutorial-Template/master-refs.bib %}. For the sampling rate, we will also choose an exponential prior, this time with a mean of 0.2.
 
-On the **initial =** buttons you will see two sets of square brackets. The first indicates what the starting value for that parameter will be, meaning its value in the first iteration of your chain. We need to alter our initialisation values to ensure that they sit within our prior distributions. The second contains two values which denote the range of values that our parameters are permitted to take, which are also important to consider carefully. Priors influence the probability of certain values being tested in your chain, but values which are improbable under your prior can still be selected if the signal in your data is strong enough; setting this range provides hard limits to your parameter values regardless of your priors. Our parameters are all rates, expressed per branch per million years, so the full set of values they can take ranges between 0.0 and infinity.
+On the **initial =** buttons you will see two sets of square brackets. The first indicates what the starting value for that parameter will be, meaning its value in the first iteration of your chain. We need to alter our initialisation values to ensure that they sit within our prior distributions. The second contains two values which denote the limits of the range of values that our parameters are permitted to take, which are also important to consider carefully. Priors influence the probability of certain values being tested in your chain, but values which are improbable under your prior can still be selected if the signal in your data is strong enough; setting this range provides hard limits to your parameter values regardless of your priors. Our parameters are all rates, expressed per branch per million years, so the full set of values they can take ranges between 0.0 and infinity.
 
 This is also the point where we express how many sections (here called **dimensions**) we want in our **piecewise constant** rates. Our rates will be assumed to be constant within these sections, but will be permitted to change at the break points between them. To keep our analysis simple (in the hope of a timely convergence!), we are going to give our rates **four** dimensions, corresponding to the major geological intervals spanned by the phylogeny: the Triassic, Jurassic, Early Cretaceous and Late Cretaceous.
 
 >Change the **birth rate** prior from a uniform distribution to an exponential. Using the drop-down arrow on the left, check that the **mean** is set to 1.0. Click on the **initial =** button and change the **initialisation value** to 1.0. Check that the lower value is 0.0 and the upper value is `Infinity`. Change the **Dimension** to 4. Repeat these four steps for the **death rate** prior.
 >
 >Change the **rho** (sampling) prior from a uniform distribution to an exponential. Using the drop-down arrow on the left, change the **mean** value to 0.2. Click on the **initial =** button and change the **initialisation value** to 0.5. Check that the lower value is 0.0, and change the upper value to `Infinity`. Change the **Dimension** to 4.
+
+We can leave the rest of the tabs as they are and save the XML file. We want to shorten the chain length and decrease the sampling frequency so the analysis completes in a reasonable time and the output files stay small. Note that we won't alter the **treelog** because we won't be using it, as our tree is fixed. (Keep in mind that it will be necessary to run a longer chain for parameters to mix properly and converge.)
+
+>Navigate to the **MCMC** panel.
+>
+>Change the **Chain Length** from 10’000’000 to 1’000’000.
+>
+>Click on the arrow next to **tracelog** and change the **File Name** to `$(filebase).log` and set the Log Every to 1’000.
+>
+>Leave all other settings at their default values and save the file as `dinosaur_BDSKY.xml`.
+
+We can now start "hacking" our XML template to remove the content we don't need and add some additional features.
+
+>Open `dinosaur_BDSKY.xml` in your preferred text editor.
 
 
 
