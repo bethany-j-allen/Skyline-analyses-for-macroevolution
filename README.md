@@ -205,7 +205,39 @@ Another option is to condition on ensuring that the model produces at least one 
 		
 After this is the argument `contemp="true"`. This describes whether extant samples were collected in the present, i.e. at the age of the youngest tips. As we do not have extant samples, this is not relevant to our analysis, and can be removed. However, for our fossil sampling rate, we instead need to specify a different parameter, the `removalProbability`. When applying birth-death models to epidemiological datasets, sampling events are usually assumed to be associated with removal from the dataset: once a patient has been diagnosed with a pathogen, it is assumed that their pathogen is sampled and sequenced once (to enable inclusion in the phylogeny), and that they subsequently start receiving treatment, removing them from the population of diseased individuals. For our dataset, this would be equivalent to assuming that fossils are only deposited at the time of extinction. It would prevent multiple fossils existing for any single species, and mean than species for which fossils have been found could not be direct ancestors of other species in the phylogeny. While the relevance of these assumptions to supertrees is debatable, it is most logical to facilitate "sampled ancestors" in the case of fossil phylogenies (see {% cite Gavryushkina2014 --file Tutorial-Template/master-refs.bib %}), so we will set our `removalProbability` to 0.
 
->Change `contemp="true"` to `removalProbability="0"`.
+>Change `contemp="true"` to `removalProbability="0.0"`.
+
+The last argument currently in the model line links the tree into the model. We need to update the name of the tree object to correspond to our fixed phylogeny which we read in at the start of the XML.
+
+>Change `tree="@Tree.t:empty"` to tree="@tree".
+
+The model is almost ready, but we want to add one last set of arguments to it. Our rates are **piecewise constant**, and we have already specified in the `state` block how many **dimensions** (constant intervals) each of our rates will have. By default, the break points in our rates are evenly spaced between the origin and the youngest tip, meaning that all of the intervals are the same length. However, we can add arguments to our model specifying when we would like our break points to be. For us, it makes sense to place these break points at the boundaries of geological intervals, so that we estimate a rate for each interval. As mentioned before, we are going to align our break points to the boundaries between the Triassic, Jurassic, Early Cretaceous and Late Cretaceous. To do this, we need to supply vectors of these times relative to the phylogeny. We are assuming that the youngest tip, at which `t=0`, lies at the Cretaceous-Paleogene boundary, so the vectors describe the cumulative duration of these geological intervals relative to this boundary. We need to specify a vector for each of our rates.
+
+>Add to the end of the model line
+>
+>```xml
+>birthRateChangeTimes="0 32.55 77.05 133.35"
+>deathRateChangeTimes="0 32.55 77.05 133.35"
+>samplingRateChangeTimes="0 32.55 77.05 133.35"
+>```
+
+And with that our model is complete! In summary, the model line should now read (with arguments in any order):
+
+	```xml
+	<distribution id="BirthDeathSkyContemporaryBDSParam.t:empty"
+                          spec="beast.evolution.speciation.BirthDeathSkylineModel"
+			  origin="origin.t:empty"
+                          birthRate="@birthRateBDS.t:empty"
+			  deathRate="@deathRateBDS.t:empty"
+                          samplingRate="@samplingBDS.t:empty"
+                          conditionOnSurvival="true"
+			  conditionOnRhoSampling="false"
+                          removalProbability="0.0"
+                          tree="@tree"
+			  birthRateChangeTimes="0 32.55 77.05 133.35"
+			  deathRateChangeTimes="0 32.55 77.05 133.35"
+			  samplingRateChangeTimes="0 32.55 77.05 133.35">
+	```
 
 
 
