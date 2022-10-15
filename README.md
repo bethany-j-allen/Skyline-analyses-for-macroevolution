@@ -177,6 +177,7 @@ The next block, `init`, describes the initialisation processes, namely construct
 >```
 
 The next block of the XML is arguably the most important: it defines the prior and posterior distributions of our analysis, including the model we are using. The model itself lies in the third nested `distribution` line, labelled `BirthDeathSkyContemporaryBDSParam`. With the addition of line breaks to aid readability, it should currently look like this:
+
 	```xml
 	<distribution id="BirthDeathSkyContemporaryBDSParam.t:empty"
                           spec="beast.evolution.speciation.BirthDeathSkylineModel"
@@ -187,6 +188,7 @@ The next block of the XML is arguably the most important: it defines the prior a
                           sampling="@samplingBDS.t:empty"
                           tree="@Tree.t:empty">
 	```
+
 Although perhaps initially intimidating, we will walk through the various arguments here and what they mean. The model will also require some tweaking to fit our intended usage.
 
 The first thing to note is that we're linking the parameters we defined earlier into the model. For example, `birthRate="@birthRateBDS.t:empty"` is simply telling the model the name we have given to our birth rate parameter. This is also true for `deathRate`. If you successfully changed all of the `rho` references to `sampling` earlier, you should also see that `sampling="@samplingBDS.t:empty"`. The name of the argument in the model is actually `samplingRate`, so we will correct that now.
@@ -220,8 +222,14 @@ The model is almost ready, but we want to add one last set of arguments to it. O
 >deathRateChangeTimes="0 32.55 77.05 133.35"
 >samplingRateChangeTimes="0 32.55 77.05 133.35"
 >```
+	
+In the line beneath our model, you will see a line which sets the `samplingRate` to 0. This refers to fossil sampling, which we have now introduced into our model, so this line needs to be removed.
+		
+>Remove the line fixing `samplingRate` to 0:
+>
+>`<parameter id="samplingRateBDS.t:empty" spec="parameter.RealParameter" name="samplingRate">0.0</parameter>`
 
-And with that our model is complete! In summary, the model line should now read (with arguments in any order):
+And with that our model is complete! In summary, the model should now read (with arguments in any order):
 
 	```xml
 	<distribution id="BirthDeathSkyContemporaryBDSParam.t:empty"
@@ -237,6 +245,7 @@ And with that our model is complete! In summary, the model line should now read 
 			  birthRateChangeTimes="0 32.55 77.05 133.35"
 			  deathRateChangeTimes="0 32.55 77.05 133.35"
 			  samplingRateChangeTimes="0 32.55 77.05 133.35">
+	</distribution>
 	```
 
 
