@@ -51,7 +51,7 @@ The aim of this tutorial is to:
 ## The data
 We will be inferring our skyline parameters using a ready-made phylogeny containing 420 dinosaur species, published by {% cite Lloyd2008 --file Tutorial-Template/master-refs.bib %}. This phylogeny is a 'supertree', created using an informal method to collate several smaller dinosaur phylogenies into a larger one. Supertrees are typically cladograms, and must be timescaled using fossil data to estimate their branch lengths. The branch lengths we use here were inferred by {% cite Sakamoto2016 --file Tutorial-Template/master-refs.bib %}: they used fossil occurrences from the [Paleobiology Database] (http://paleobiodb.org) to infer the midpoint of the temporal range of each tip, and timescaled the phylogeny using the "equal" method, which distributes time evenly between the available branches.
 
-## Creating an XML template with BEAUti
+## Setting up the Fossilised-Birth-Death skyline analysis
 Many of the features we will need in our XML files are currently not implemented in BEAUti. However, we will start our analyses by creating XML files in BEAUti which will then serve as a template for us to alter by hand ("hack") later.
 
 ### Install BEAST2 packages
@@ -65,7 +65,7 @@ After the installation of a package, the program is on your computer, but BEAUti
 
 >Close the **BEAST2 Package Manager** and **_restart_** BEAUti to fully load the **BDSKY** and **feast** packages.
 
-### Setting up the Fossilised-Birth-Death skyline analysis
+### Creating the Analysis Files with BEAUti
 The first step in setting up an analysis in BEAUti is to upload an alignment. In our case, we do not have an alignment as we are using a ready-made phylogeny instead, but we will still need to upload an alignment in order to initialise our XML. We have provided a dummy `.nexus` file for this purpose, which we will replace later with code that reads in our phylogeny.
 
 >In the **Partitions** panel, import the nexus file with the empty alignment by navigating to **File > Import Alignment** in the menu and then finding the `empty.nexus` file on your computer, *or* drag and drop the file into the **BEAUti** window.
@@ -184,7 +184,7 @@ The next block of the XML is arguably the most important: it defines the prior a
                           conditionOnRoot="true"
                           contemp="true"
                           deathRate="@deathRateBDS.t:empty"
-                          rho="@rhoBDS.t:empty"
+                          sampling="@samplingBDS.t:empty"
                           tree="@Tree.t:empty">
 	```
 Although perhaps initially intimidating, we will walk through the various arguments here and what they mean. The model will also require some tweaking to fit our intended usage.
@@ -197,12 +197,16 @@ We also need to link the origin parameter (which we defined earlier) into the mo
 		
 >Somewhere within the model line, add `origin="origin.t:empty"`.
 		
-The next argument to note is `conditionOnRoot="true"`. Whenever we conduct a Bayesian phylogenetic or phylodynamic analysis, we have to choose a single facet of the model which will remain fixed in some way, for all of the other parameters to move around. We describe the model as being **conditioned** on this value. Here we can see that the default value to condition on is the age of the origin (or root); as discussed earlier, this means assuming that the first divergence in our sampled phylogeny represents the "true" origin time. This might be a reasonable assumption for a well-sampled phylogeny which ideally incorporates both fossil and extant taxa, but that is not the case here, which is why we have instead chosen to infer our origin time. We must therefore choose something else to condition the model on.
+The next argument to note is `conditionOnRoot="true"`. Whenever we conduct a Bayesian birth-death phylogenetic or phylodynamic analysis, we have to choose a single facet of the model which will remain fixed in some way, for all of the other parameters to move around. We describe the model as being **conditioned** on this value. Here we can see that the default value to condition on is the age of the origin (or root); as discussed earlier, this means assuming that the first divergence in our sampled phylogeny represents the "true" origin time. This might be a reasonable assumption for a well-sampled phylogeny which ideally incorporates both fossil and extant taxa, but that is not the case here, which is why we have instead chosen to infer our origin time. We must therefore choose something else to condition the model on.
 		
 Another option is to condition on ensuring that the model produces at least one sample (is observable). Depending on the type of sampling used, we can either use `conditionOnRhoSampling` or `conditionOnSurvival`: the former assumes at least one extant sample, while the latter assumes at least one sample of either type, be it an extant sample or an observed fossil. As our phylogeny of non-avian dinosaurs only includes extinct species, we will set these to "false" and "true" respectively.
 		
 >Change `conditionOnRoot="true"` to `conditionOnSurvival="true" conditionOnRhoSampling="false"`.
 		
+After this is the argument `contemp="true"`. This describes whether extant samples were collected in the present, i.e. at the age of the youngest tips. As we do not have extant samples, this is not relevant to our analysis, and can be removed. However, for our fossil sampling rate, we instead need to specify a different parameter, the `removalProbability`. When applying birth-death models to epidemiological datasets, sampling events are usually assumed to be associated with removal from the dataset: once a patient has been diagnosed with a pathogen, it is assumed that their pathogen is sampled and sequenced once (to enable inclusion in the phylogeny), and that they subsequently start receiving treatment, removing them from the population of diseased individuals. For our dataset, this would be equivalent to assuming that fossils are only deposited at the time of extinction. It would prevent multiple fossils existing for any single fossil species, and mean than species for which fossils have been found could not be direct ancestors of other species in the phylogeny. While the relevance of these assumptions to supertrees is debatable, it is most logical to facilitate "sampled ancestors" in the case of fossil phylogenies, so we will set our `removalProbability` to 0.
+
+>Change `contemp="true"` to `removalProbability="0"`.
+
 
 
 ### Setting up the Exponential Coalescent skyline analysis
