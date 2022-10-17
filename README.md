@@ -80,7 +80,13 @@ Most of the default tabs in BEAUti relate to inferring the phylogeny, which we w
 
 Here we see that the model has two parameters, `ePopSize` and `growthRate`. `ePopSize` refers to the **effective population size** at the start of the coalescent process. Because coalescent models consider time from the present backwards (see **Skyline plots** tutorial), this therefore refers to the size of the population at the end of our youngest time interval. The tips in our phylogeny are species, and so in this context, our effective population size can be considered to be analogous to **total species richness**. Our `growthRate` is simply our **diversification rate**.
 
-For now we will leave both of these priors on their default settings. We will go into much more detail on the contents of this tab later, when setting up our birth-death model.
+We actually only need the population size prior, and will remove the growth rate prior later. The default `ePopSize` prior is a 1/X (or `OneOnX`), which is a good choice when you have little knowledge about what the shape of your prior should be, placing reduced probability on higher values. We will keep the shape of this prior as the default, but change the starting values, meaning the value of the parameters in their first iterations of the chain. We will set the starting `ePopSize` to 1, and the `growthRate` to 0.
+
+>Click on the **initial =** button for `ePopSize` and change the **initialisation value** to 1.0.
+>
+>Click on the **initial =** button for `growthRate` and change the **initialisation value** to 0.0.
+
+We will go into much more detail on the contents of this tab later, when setting up our birth-death model.
 
 We can leave the rest of the tabs as they are and save the XML file. We want to shorten the chain length and decrease the sampling frequency so the analysis completes in a reasonable time and the output files stay small. Note that we won't alter the **treelog** because we won't be using it, as our tree is fixed. (Keep in mind that it will be necessary to run a longer chain for parameters to mix properly and converge.)
 
@@ -134,6 +140,57 @@ The first subsection within the `run` block is labelled `state`. This describes 
 >        </tree>
 >```
 
+After this we see descriptions of our two parameters, `ePopSize` and `growthRate`. Rather than one growth rate, we actually want to infer one for each of our **time intervals** of interest. To keep our analysis simple (in the hope of a timely convergence!), we are going to use **four** time bins, corresponding to the major geological intervals spanned by the phylogeny: the Triassic, Jurassic, Early Cretaceous and Late Cretaceous. We will therefore copy and paste the `growthRate` parameter three times, giving each a new name (`id`).
+
+>Convert the single `growthRate` parameter into four with different `ids`:
+>
+>```xml
+> <state id="state" spec="State" storeEvery="5000">
+> <parameter id="ePopSize.t:empty" spec="parameter.RealParameter" name="stateNode">1.0</parameter>
+> <parameter id="growthRate1" spec="parameter.RealParameter" name="stateNode">0.0</parameter>
+> <parameter id="growthRate2" spec="parameter.RealParameter" name="stateNode">0.0</parameter>
+> <parameter id="growthRate3" spec="parameter.RealParameter" name="stateNode">0.0</parameter>
+> <parameter id="growthRate4" spec="parameter.RealParameter" name="stateNode">0.0</parameter>
+> </state>
+>```
+
+The next block, `init`, describes the initialisation processes, namely construction of the starting tree and assoicated population model, neither of which we need.
+
+>Remove the `init` subsection of the XML:
+>
+>```xml
+>    <init id="RandomTree.t:empty" spec="beast.evolution.tree.RandomTree" estimate="false" initial="@Tree.t:empty" taxa="@empty">
+>        <populationModel id="ConstantPopulation0.t:empty" spec="ConstantPopulation">
+>            <parameter id="randomPopSize.t:empty" spec="parameter.RealParameter" name="popSize">1.0</parameter>
+>        </populationModel>
+>    </init>
+>```
+
+The next block of the XML is arguably the most important: it defines the **prior and posterior distributions** of our analysis, including the **model** we are using. The model itself is described in the third nested `distribution` line, labelled `CoalescentExponential`. With the addition of line breaks to aid readability, it should currently look like this:
+
+```xml
+<distribution id="CoalescentExponential.t:empty" spec="Coalescent">
+                <populationModel id="ExponentialGrowth.t:empty"
+		spec="ExponentialGrowth"
+		growthRate="@growthRate.t:empty"
+		popSize="@ePopSize.t:empty"/>
+                <treeIntervals id="TreeIntervals.t:empty" spec="TreeIntervals" tree="@Tree.t:empty"/>
+</distribution>
+```
+
+The arguments determine the model to be used, and link the two parameters in the model, `growthRate` and `popSize`, to our definitions of them elsewhere in the XML. We can see that at present, the model uses a single growth rate for the full duration of the coalescent process. Instead of using this model, we are going to use a variation which is available in the package **feast**. The model is described as a `CompoundPopulationModel`, and allows multiple intervals to be defined over the course of our coalescent process, each of which can have their own growth rate, and links the size of the population at the end of one interval as the starting population size in the next. This will enable us to estimate a different diversification rate for each of our four time intervals of interest. The basic parameterisation of the model, as described on the [feast Github page] (https://github.com/tgvaughan/feast), is as follows:
+
+```xml
+<populationModel spec="CompoundPopulationModel">
+    <populationModel spec="ConstantPopulation"> <popSize spec="RealParameter" value="5.0"/></populationModel>
+    <populationModel spec="ConstantPopulation"> <popSize spec="RealParameter" value="10.0"/></populationModel>
+    <populationModel spec="ConstantPopulation"> <popSize spec="RealParameter" value="2.0"/></populationModel>
+    <changeTimes spec="RealParameter" value="1.0 3.0"/>
+</populationModel>
+```
+
+As well as defining three time intervals here, you can also see an object called `changeTimes`. Here we can provide a vector which describes when the boundaries between our time intervals should be, so it is easy for us to define these as our geological interval boundaries. The vector needs to provide the boundaries relative to the timescale of the phylogeny. We are assuming that the youngest tip, at which `t=0`, lies at the Cretaceous-Paleogene boundary, so the times will need to describe the cumulative duration of these geological intervals relative to this boundary.
+
 
 
 ## Setting up the Fossilised-Birth-Death Skyline analysis
@@ -152,9 +209,9 @@ The "standard" `contemporary` birth death skyline is parameterised using a repro
 
 Choosing sensible priors for these parameters is not straightforward, so we will select priors which are relatively unrestrictive. For the birth and death rates, we will use **exponential** priors with a mean of 1.0; this places more probability on small rates, but still permits rates which are towards the higher end of those estimated from living animals and plants {% cite HenaoDiaz2019 --file Tutorial-Template/master-refs.bib %}. For the sampling rate, we will also choose an exponential prior, this time with a mean of 0.2.
 
-On the **initial =** buttons you will see two sets of square brackets. The first indicates what the starting value for that parameter will be, meaning its value in the first iteration of your chain. We need to alter our initialisation values to ensure that they sit within our prior distributions. The second contains two values which denote the limits of the range of values that our parameters are permitted to take, which are also important to consider carefully. Priors influence the probability of certain values being tested in your chain, but values which are improbable under your prior can still be selected if the signal in your data is strong enough; setting this range provides hard limits to your parameter values regardless of your priors. Our parameters are all rates, expressed per branch per million years, so the full set of values they can take ranges between 0.0 and infinity.
+On the **initial =** buttons you will see two sets of square brackets. The first indicates what the starting value for that parameter will be; we need to alter our initialisation values to ensure that they sit within our prior distributions. The second contains two values which denote the limits of the range of values that our parameters are permitted to take, which are also important to consider carefully. Priors influence the probability of certain values being tested in your chain, but values which are improbable under your prior can still be selected if the signal in your data is strong enough. Setting this range provides hard limits to your parameter values regardless of your priors. Our parameters are all rates, expressed per branch per million years, so the full set of values they can take ranges between 0.0 and infinity.
 
-This is also the point where we express how many sections (here called **dimensions**) we want in our **piecewise constant** rates. Our rates will be assumed to be constant within these sections, but will be permitted to change at the break points between them. To keep our analysis simple (in the hope of a timely convergence!), we are going to give our rates **four** dimensions, corresponding to the major geological intervals spanned by the phylogeny: the Triassic, Jurassic, Early Cretaceous and Late Cretaceous.
+This is also the point where we express how many sections (here called **dimensions**) we want in our **piecewise constant** rates. Our rates will be assumed to be constant within these sections, but will be permitted to change at the break points between them. Similar to the exponential coalescent model, we are going to give our rates **four** dimensions, corresponding to the Triassic, Jurassic, Early Cretaceous and Late Cretaceous.
 
 >Change the **birth rate** prior from a uniform distribution to an exponential. Using the drop-down arrow on the left, check that the **mean** is set to 1.0. Click on the **initial =** button and change the **initialisation value** to 1.0. Check that the lower value is 0.0 and the upper value is `Infinity`. Change the **Dimension** to 4. Repeat these four steps for the **death rate** prior.
 >
@@ -229,7 +286,7 @@ In this section we need to set the limits of our origin time and its initial val
 
 Note that each of our rate parameters have 4 **dimensions** but we do not specify this value for our origin; while our **piecewise constant** rates can change three times in each iteration (resulting in four fixed values), only a single origin value is needed, and we therefore do not need to specify its number of dimensions (as 1).
 
-The next block, `init`, describes the initialisation processes, namely construction of the starting tree and population model, neither of which we need.
+As before, the `init` block is not needed for this analysis.
 
 >Remove the `init` subsection of the XML:
 >
@@ -241,7 +298,7 @@ The next block, `init`, describes the initialisation processes, namely construct
 >    </init>
 >```
 
-The next block of the XML is arguably the most important: it defines the **prior and posterior distributions** of our analysis, including the **model** we are using. The model itself lies in the third nested `distribution` line, labelled `BirthDeathSkyContemporaryBDSParam`. With the addition of line breaks to aid readability, it should currently look like this:
+The next block describes the model, which is labelled `BirthDeathSkyContemporaryBDSParam`. With the addition of line breaks to aid readability, it should currently look like this:
 
 ```xml
 	<distribution id="BirthDeathSkyContemporaryBDSParam.t:empty"
