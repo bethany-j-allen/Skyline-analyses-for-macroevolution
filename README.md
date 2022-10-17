@@ -9,7 +9,7 @@ beastversion: 2.6.6
 
 # Background
 
-Bayesian phylodynamics uses the shape of a phylogenetic tree to infer characteristics of the population described by the phylogeny. Although widely applied to epidemiological datasets (see Skyline plots tutorial), the approach is yet to be used widely in macroevolution. In this case, skyline methods can be used to estimate parameters such as speciation, extinction and sampling rates over time, as well as the total number of lineages (usually species diversity). In this tutorial, we demonstrate how to apply the exponential coalescent and fossilised-birth-death skyline models, which both estimate piecewise-constant evolutionary rates through time, to a dinosaur supertree. The models differ in the temporal direction in which they are applied, and the assumptions they make about how the phylogeny is sampled.
+Bayesian phylodynamics uses the shape of a phylogenetic tree to infer characteristics of the population described by the phylogeny. Although widely applied to epidemiological datasets, the approach is yet to be used widely in macroevolution. In this case, skyline methods can be used to estimate parameters such as speciation, extinction and sampling rates over time, as well as the total number of lineages (usually species diversity). In this tutorial, we demonstrate how to apply the exponential coalescent and fossilised-birth-death skyline models, which both estimate piecewise-constant evolutionary rates through time, to a dinosaur supertree. The models differ in the temporal direction in which they are applied, and the assumptions they make about how the phylogeny is sampled. We recommend reading the **Skyline plots** tutorial before attempting this one, as it covers a lot of the theory behind the models which we will not repeat here, except to highlight points which are relevant to macroevolutionary datasets.
 
 ----
 
@@ -51,10 +51,7 @@ The aim of this tutorial is to:
 ## The data
 We will be inferring our skyline parameters using a ready-made phylogeny containing 420 dinosaur species, published by {% cite Lloyd2008 --file Tutorial-Template/master-refs.bib %}. This phylogeny is a 'supertree', created using an informal method to collate several smaller dinosaur phylogenies into a larger one. Supertrees are typically cladograms, and must be timescaled using fossil data to estimate their branch lengths. The branch lengths we use here were inferred by {% cite Sakamoto2016 --file Tutorial-Template/master-refs.bib %}: they used fossil occurrences from the [Paleobiology Database] (http://paleobiodb.org) to infer the midpoint of the temporal range of each tip, and timescaled the phylogeny using the "equal" method, which distributes time evenly between the available branches.
 
-## Setting up the Fossilised-Birth-Death skyline analysis
-Many of the features we will need in our XML files are currently not implemented in BEAUti. However, we will start our analyses by creating XML files in BEAUti which will then serve as a template for us to alter by hand ("hack") later.
-
-### Install BEAST2 packages
+## Install BEAST2 packages
 The coalescent-based skyline model is included in the core of BEAST2, but we need to install the **BDSKY** package, which contains the birth-death skyline model. We will also need the **feast** package, which will allow us to integrate some more complex features into our analyses. Installation of packages is done using the package manager, which is integrated into BEAUti.
 
 >Open the **BEAST2 Package Manager** by navigating to **File > Manage Packages**.
@@ -65,6 +62,11 @@ After the installation of a package, the program is on your computer, but BEAUti
 
 >Close the **BEAST2 Package Manager** and **_restart_** BEAUti to fully load the **BDSKY** and **feast** packages.
 
+## Setting up the Exponential Coalescent Skyline analysis
+We will start with the simpler of the two models, the **exponential coalescent**. This model is similar in construction to the **constant coalescent** model applied in the **Skyline plots** tutorial, but instead of assuming that the size of the population remains constant during our individual time intervals, we instead assume that they are experiencing **exponential growth or decline**. The advantage of using this model is that while the constant coalescent estimates **constant effective population sizes** within each time interval, the exponential coalescent instead estimates **diversification rates** for each of the time intervals, which is what we would like to infer for our dinosaurs.
+
+Many of the features we will need in our XML files are not currently implemented in BEAUti. However, for both models, we will start our analyses by creating XML files in BEAUti which will then serve as a template for us to alter by hand ("hack") later. 
+
 ### Creating the Analysis Files with BEAUti
 The first step in setting up an analysis in BEAUti is to upload an alignment. In our case, we do not have an alignment as we are using a ready-made phylogeny instead, but we will still need to upload an alignment in order to initialise our XML. We have provided a dummy `.nexus` file for this purpose, which we will replace later with code that reads in our phylogeny.
 
@@ -73,6 +75,20 @@ The first step in setting up an analysis in BEAUti is to upload an alignment. In
 The empty alignment should appear in the **Partitions** tab, named `empty` and containing a single nucleotide site for a single taxon.
 
 Most of the default tabs in BEAUti relate to inferring the phylogeny, which we will not be doing, so we can skip straight to the **Priors** tab. It's worth remembering that a lot of the default parameters in BEAUti are set up for analyses very different to ours, so it's worth checking these thoroughly.
+
+
+
+## Setting up the Fossilised-Birth-Death Skyline analysis
+As with the exponential coalscent model, many of the features we will need in our XML file are not yet implemented in BEAUti, but we will start our analyses by creating XML files in BEAUti.
+
+### Creating the Analysis Files with BEAUti
+As before, we need to start by uploading our dummy `.nexus` file as an alignment.
+
+>In the **Partitions** panel, import the nexus file with the empty alignment by navigating to **File > Import Alignment** in the menu and then finding the `empty.nexus` file on your computer, *or* drag and drop the file into the **BEAUti** window.
+
+The empty alignment should appear in the **Partitions** tab, named `empty` and containing a single nucleotide site for a single taxon.
+
+Once again, we will skip straight to the **Priors** tab.
 
 >Select the **Priors** tab and choose **Birth Death Skyline BDSParam** as the tree prior.
 
@@ -98,6 +114,7 @@ We can leave the rest of the tabs as they are and save the XML file. We want to 
 >
 >Leave all other settings at their default values and save the file as `dinosaur_BDSKY.xml`.
 
+### Amending the Analysis Files
 We can now start "hacking" our XML template to remove the content we don't need and add some additional features.
 
 >Open `dinosaur_BDSKY.xml` in your preferred text editor.
@@ -387,11 +404,10 @@ We can now run the analysis in BEAST2. It's important to have `Lloyd.tree` saved
 >
 >**OR**
 >
->Download and save `Lloyd.tree` in a folder of your choosing, preferably the one also containing your XML file. Find the BEAST2 executable in **BEAST_2.X.X** (depending on your version) ** > bin**. Right-click on the **beast** executable and select **Create shortcut** on Windows or **Make alias** on Mac. Cut and paste the created shortcut/alias into the folder containing your analysis files. If you open your **terminal** and navigate to the folder containing your files, you should now be able to run the analysis through the terminal using `beast dinosaur_BDSKY.xml` (or `beast dinosaur_BDSKY_final.xml` if you're using our ready-made version).
+>Download and save `Lloyd.tree` in a folder of your choosing, preferably the one also containing your XML file. Find the BEAST2 executable in **BEAST_2.X.X** (depending on your version) **> bin**. Right-click on the **beast** executable and select **Create shortcut** on Windows or **Make alias** on Mac. Cut and paste the created shortcut/alias into the folder containing your analysis files. If you open your **terminal** and navigate to the folder containing your files, you should now be able to run the analysis through the terminal using `beast dinosaur_BDSKY.xml` (or `beast dinosaur_BDSKY_final.xml` if you're using our ready-made version).
 
 The analysis should take about XX minutes to run.
 
-### Setting up the Exponential Coalescent skyline analysis
 
 
 
