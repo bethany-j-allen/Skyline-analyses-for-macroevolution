@@ -178,7 +178,7 @@ The next block of the XML is arguably the most important: it defines the **prior
 </distribution>
 ```
 
-The arguments determine the model to be used, and link the two parameters in the model, `growthRate` and `popSize`, to our definitions of them elsewhere in the XML. We can see that at present, the model uses a single growth rate for the full duration of the coalescent process. Instead of using this model, we are going to use a variation which is available in the package **feast**. The model is described as a `CompoundPopulationModel`, and allows multiple intervals to be defined over the course of our coalescent process, each of which can have their own growth rate, and links the size of the population at the end of one interval as the starting population size in the next. This will enable us to estimate a different diversification rate for each of our four time intervals of interest. The basic parameterisation of the model, as described on the [feast Github page] (https://github.com/tgvaughan/feast), is as follows:
+The arguments determine the model to be used, and link the two parameters in the model, `growthRate` and `popSize`, to our definitions of them elsewhere in the XML. We can see that at present, the model uses a single growth rate for the full duration of the coalescent process. Instead of using this model, we are going to use a variation which is available in the package **feast**. The model is described as a `CompoundPopulationModel`, and allows multiple intervals to be defined over the course of our coalescent process, each of which can have their own growth rate. This will enable us to estimate a different diversification rate for each of our four time intervals of interest. The basic parameterisation of the model, as described on the [feast Github page] (https://github.com/tgvaughan/feast), is as follows:
 
 ```xml
 <populationModel spec="CompoundPopulationModel">
@@ -189,8 +189,45 @@ The arguments determine the model to be used, and link the two parameters in the
 </populationModel>
 ```
 
-As well as defining three time intervals here, you can also see an object called `changeTimes`. Here we can provide a vector which describes when the boundaries between our time intervals should be, so it is easy for us to define these as our geological interval boundaries. The vector needs to provide the boundaries relative to the timescale of the phylogeny. We are assuming that the youngest tip, at which `t=0`, lies at the Cretaceous-Paleogene boundary, so the times will need to describe the cumulative duration of these geological intervals relative to this boundary.
+We will be changing the `ConstantPopulation` specification to `ExponentialGrowth`, to match our current model. We can also link the size of the population at the end of one interval as the starting population size in the next, using the `makeContinuous="true"` argument.	
+	
+As well as defining three time intervals here, you can also see an object called `changeTimes`. Here we can provide a vector which describes when the boundaries between our time intervals should be, so it is easy for us to define these as our geological interval boundaries. The vector needs to provide the boundaries relative to the timescale of the phylogeny. We are assuming that the youngest tip lies at the Cretaceous-Paleogene boundary, so the times will need to describe the cumulative duration of these geological intervals relative to this boundary.
 
+>Replace the current `populationModel` with the following:
+>
+>```xml
+> <populationModel spec="feast.popmodels.CompoundPopulationModel" makeContinuous="true">
+>           <populationModel spec="ExponentialGrowth" popSize="@startPopSize" growthRate="@growthRate1"/>
+>           <populationModel spec="ExponentialGrowth" popSize="1.0" growthRate="@growthRate2"/>
+>           <populationModel spec="ExponentialGrowth" popSize="1.0" growthRate="@growthRate3"/>
+>           <populationModel spec="ExponentialGrowth" popSize="1.0" growthRate="@growthRate4"/>
+>           <changeTimes <changeTimes spec="RealParameter" value="32.55 77.05 133.35"/>
+> </populationModel>
+>```
+	
+We also need to change the `tree` name in `treeIntervals` so that it links with the phylogeny we are reading in at the start of the XML.
+	
+>Change `tree="@Tree.t:empty"` to `tree="@tree"` in the `treeIntervals` line.
+	
+As the fit of the model to the phylogeny is what we are interested in, we are going to rename this small block `likelihood` to ensure that this is what is recorded in our output logs.
+	
+>Change `id="CoalescentExponential.t:empty"` to `id="likelihood"`.
+	
+The model block should now look like this:
+	
+```xml
+<distribution id="likelihood" spec="Coalescent">
+	<populationModel spec="feast.popmodels.CompoundPopulationModel" makeContinuous="true">
+           <populationModel spec="ExponentialGrowth" popSize="@startPopSize" growthRate="@growthRate1"/>
+           <populationModel spec="ExponentialGrowth" popSize="1.0" growthRate="@growthRate2"/>
+           <populationModel spec="ExponentialGrowth" popSize="1.0" growthRate="@growthRate3"/>
+           <populationModel spec="ExponentialGrowth" popSize="1.0" growthRate="@growthRate4"/>
+           <changeTimes <changeTimes spec="RealParameter" value="32.55 77.05 133.35"/>
+	</populationModel>
+        <treeIntervals id="TreeIntervals.t:empty" spec="TreeIntervals" tree="@tree"/>
+</distribution>
+```
+	
 
 
 ## Setting up the Fossilised-Birth-Death Skyline analysis
