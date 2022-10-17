@@ -76,33 +76,11 @@ The empty alignment should appear in the **Partitions** tab, named `empty` and c
 
 Most of the default tabs in BEAUti relate to inferring the phylogeny, which we will not be doing, so we can skip straight to the **Priors** tab. It's worth remembering that a lot of the default parameters in BEAUti are set up for analyses very different to ours, so it's worth checking these thoroughly.
 
+>Select the **Priors** tab and choose **Coalescent Exponential Population** as the tree prior.
 
+Here we see that the model has two parameters, `ePopSize` and `growthRate`. `ePopSize` refers to the **effective population size** at the start of the coalescent process. Because coalescent models consider time from the present backwards (see **Skyline plots** tutorial), this therefore refers to the size of the population at the end of our youngest time interval. The tips in our phylogeny are species, and so in this context, our effective population size can be considered to be analogous to **total species richness**. Our `growthRate` is simply our **diversification rate**.
 
-## Setting up the Fossilised-Birth-Death Skyline analysis
-As with the exponential coalscent model, many of the features we will need in our XML file are not yet implemented in BEAUti, but we will start our analyses by creating XML files in BEAUti.
-
-### Creating the Analysis Files with BEAUti
-As before, we need to start by uploading our dummy `.nexus` file as an alignment.
-
->In the **Partitions** panel, import the nexus file with the empty alignment by navigating to **File > Import Alignment** in the menu and then finding the `empty.nexus` file on your computer, *or* drag and drop the file into the **BEAUti** window.
-
-The empty alignment should appear in the **Partitions** tab, named `empty` and containing a single nucleotide site for a single taxon.
-
-Once again, we will skip straight to the **Priors** tab.
-
->Select the **Priors** tab and choose **Birth Death Skyline BDSParam** as the tree prior.
-
-The "standard" `contemporary` birth death skyline is parameterised using a reproductive number, a "become uninfectious" rate and a sampling proportion. However, here we are using the `BDSParam` model, which refers to parameterisation using a birth rate (here, speciation), a death rate (here, extinction) and an extant sampling proportion. As our phylogeny is of non-avian dinosaurs, for which we only have fossils and no extant (genetic) samples, we will later exchange the extant sampling proportion, usually denoted using {% eqinline rho %}, for a fossil sampling rate, usually denoted using {% eqinline psi %}.
-
-Choosing sensible priors for these parameters is not straightforward, so we will select priors which are relatively unrestrictive. For the birth and death rates, we will use **exponential** priors with a mean of 1.0; this places more probability on small rates, but still permits rates which are towards the higher end of those estimated from living animals and plants {% cite HenaoDiaz2019 --file Tutorial-Template/master-refs.bib %}. For the sampling rate, we will also choose an exponential prior, this time with a mean of 0.2.
-
-On the **initial =** buttons you will see two sets of square brackets. The first indicates what the starting value for that parameter will be, meaning its value in the first iteration of your chain. We need to alter our initialisation values to ensure that they sit within our prior distributions. The second contains two values which denote the limits of the range of values that our parameters are permitted to take, which are also important to consider carefully. Priors influence the probability of certain values being tested in your chain, but values which are improbable under your prior can still be selected if the signal in your data is strong enough; setting this range provides hard limits to your parameter values regardless of your priors. Our parameters are all rates, expressed per branch per million years, so the full set of values they can take ranges between 0.0 and infinity.
-
-This is also the point where we express how many sections (here called **dimensions**) we want in our **piecewise constant** rates. Our rates will be assumed to be constant within these sections, but will be permitted to change at the break points between them. To keep our analysis simple (in the hope of a timely convergence!), we are going to give our rates **four** dimensions, corresponding to the major geological intervals spanned by the phylogeny: the Triassic, Jurassic, Early Cretaceous and Late Cretaceous.
-
->Change the **birth rate** prior from a uniform distribution to an exponential. Using the drop-down arrow on the left, check that the **mean** is set to 1.0. Click on the **initial =** button and change the **initialisation value** to 1.0. Check that the lower value is 0.0 and the upper value is `Infinity`. Change the **Dimension** to 4. Repeat these four steps for the **death rate** prior.
->
->Change the **rho** (sampling) prior from a uniform distribution to an exponential. Using the drop-down arrow on the left, change the **mean** value to 0.2. Click on the **initial =** button and change the **initialisation value** to 0.5. Check that the lower value is 0.0, and change the upper value to `Infinity`. Change the **Dimension** to 4.
+For now we will leave both of these priors on their default settings. We will go into much more detail on the contents of this tab later, when setting up our birth-death model.
 
 We can leave the rest of the tabs as they are and save the XML file. We want to shorten the chain length and decrease the sampling frequency so the analysis completes in a reasonable time and the output files stay small. Note that we won't alter the **treelog** because we won't be using it, as our tree is fixed. (Keep in mind that it will be necessary to run a longer chain for parameters to mix properly and converge.)
 
@@ -112,12 +90,12 @@ We can leave the rest of the tabs as they are and save the XML file. We want to 
 >
 >Click on the arrow next to **tracelog** and change the **File Name** to `$(filebase).log` and set the Log Every to 1’000.
 >
->Leave all other settings at their default values and save the file as `dinosaur_BDSKY.xml`.
+>Leave all other settings at their default values and save the file as `dinosaur_coalescent.xml`.
 
 ### Amending the Analysis Files
-We can now start "hacking" our XML template to remove the content we don't need and add some additional features.
+We can now start "hacking" our XML template to ensure that it includes our desired features, including some that are not available in BEAUti.
 
->Open `dinosaur_BDSKY.xml` in your preferred text editor.
+>Open `dinosaur_coal.xml` in your preferred text editor.
 
 The first line sets out information about the format of the xml and its contents, which we can ignore. The next section is labelled `data`, and contains our dummy alignment. We don't need this section, so it can be commented out or simply deleted.
 
@@ -146,6 +124,76 @@ The section after this contains a block of statements labelled `map`, which link
 
 The first subsection within the `run` block is labelled `state`. This describes the objects inferred within the analysis. The first object described is the `tree`, based on our dummy alignment. As we are not inferring our tree, it can be removed from this section.
 
+>Remove the `tree` part of the `state` subsection of the XML:
+>
+>```xml
+>        <tree id="Tree.t:empty" spec="beast.evolution.tree.Tree" name="stateNode">
+>            <taxonset id="TaxonSet.empty" spec="TaxonSet">
+>                <alignment idref="empty"/>
+>            </taxonset>
+>        </tree>
+>```
+
+
+
+## Setting up the Fossilised-Birth-Death Skyline analysis
+As with the exponential coalscent model, many of the features we will need in our XML file are not yet implemented in BEAUti, but we will start our analyses by creating XML files in BEAUti.
+
+### Creating the Analysis Files with BEAUti
+As before, we need to start by uploading our dummy `.nexus` file as an alignment.
+
+>In the **Partitions** panel, import the nexus file with the empty alignment by navigating to **File > Import Alignment** in the menu and then finding the `empty.nexus` file on your computer, *or* drag and drop the file into the **BEAUti** window.
+
+Once again, we will skip straight to the **Priors** tab.
+
+>Select the **Priors** tab and choose **Birth Death Skyline BDSParam** as the tree prior.
+
+The "standard" `contemporary` birth death skyline is parameterised using a reproductive number, a "become uninfectious" rate and a sampling proportion. However, here we are using the `BDSParam` model, which refers to parameterisation using a birth rate (here, speciation), a death rate (here, extinction) and an extant sampling proportion. As our phylogeny is of non-avian dinosaurs, for which we only have fossils and no extant (genetic) samples, we will later exchange the extant sampling proportion, usually denoted using {% eqinline rho %}, for a fossil sampling rate, usually denoted using {% eqinline psi %}.
+
+Choosing sensible priors for these parameters is not straightforward, so we will select priors which are relatively unrestrictive. For the birth and death rates, we will use **exponential** priors with a mean of 1.0; this places more probability on small rates, but still permits rates which are towards the higher end of those estimated from living animals and plants {% cite HenaoDiaz2019 --file Tutorial-Template/master-refs.bib %}. For the sampling rate, we will also choose an exponential prior, this time with a mean of 0.2.
+
+On the **initial =** buttons you will see two sets of square brackets. The first indicates what the starting value for that parameter will be, meaning its value in the first iteration of your chain. We need to alter our initialisation values to ensure that they sit within our prior distributions. The second contains two values which denote the limits of the range of values that our parameters are permitted to take, which are also important to consider carefully. Priors influence the probability of certain values being tested in your chain, but values which are improbable under your prior can still be selected if the signal in your data is strong enough; setting this range provides hard limits to your parameter values regardless of your priors. Our parameters are all rates, expressed per branch per million years, so the full set of values they can take ranges between 0.0 and infinity.
+
+This is also the point where we express how many sections (here called **dimensions**) we want in our **piecewise constant** rates. Our rates will be assumed to be constant within these sections, but will be permitted to change at the break points between them. To keep our analysis simple (in the hope of a timely convergence!), we are going to give our rates **four** dimensions, corresponding to the major geological intervals spanned by the phylogeny: the Triassic, Jurassic, Early Cretaceous and Late Cretaceous.
+
+>Change the **birth rate** prior from a uniform distribution to an exponential. Using the drop-down arrow on the left, check that the **mean** is set to 1.0. Click on the **initial =** button and change the **initialisation value** to 1.0. Check that the lower value is 0.0 and the upper value is `Infinity`. Change the **Dimension** to 4. Repeat these four steps for the **death rate** prior.
+>
+>Change the **rho** (sampling) prior from a uniform distribution to an exponential. Using the drop-down arrow on the left, change the **mean** value to 0.2. Click on the **initial =** button and change the **initialisation value** to 0.5. Check that the lower value is 0.0, and change the upper value to `Infinity`. Change the **Dimension** to 4.
+
+We can leave the rest of the tabs as they are and save the XML file. We will again shorten the chain length and decrease the sampling frequency of our analysis, so the analysis completes in a reasonable time and the output files stay small.
+
+>Navigate to the **MCMC** panel.
+>
+>Change the **Chain Length** from 10’000’000 to 1’000’000.
+>
+>Click on the arrow next to **tracelog** and change the **File Name** to `$(filebase).log` and set the Log Every to 1’000.
+>
+>Leave all other settings at their default values and save the file as `dinosaur_BDSKY.xml`.
+
+### Amending the Analysis Files
+It is now time to "hack" our XML template, to remove the content we don't need and add some additional features. The first few steps are the same as for our exponential coalescent XML.
+
+>Open `dinosaur_BDSKY.xml` in your preferred text editor.
+>
+>Remove the `data` section of the XML:
+>
+>```xml
+>    <data
+> id="empty"
+> spec="Alignment"
+> name="alignment">
+>                     <sequence id="seq_Tyrannosaurus_rex" spec="Sequence" taxon="Tyrannosaurus_rex" totalcount="4" value="N"/>
+>                 </data>
+>```
+>
+>Where the `data` section was in the XML, paste in the `tree` section:
+>
+>```xml
+>  <tree id="tree"
+>        spec="feast.fileio.TreeFromNewickFile" fileName="Lloyd.tree"
+>        IsLabelledNewick="true" adjustTipHeights="false" />
+>```
+>
 >Remove the `tree` part of the `state` subsection of the XML:
 >
 >```xml
