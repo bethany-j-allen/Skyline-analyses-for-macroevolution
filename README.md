@@ -211,9 +211,9 @@ After this is the argument `contemp="true"`. This describes whether extant sampl
 
 The last argument currently in the model line links the tree into the model. We need to update the name of the tree object to correspond to our fixed phylogeny which we read in at the start of the XML.
 
->Change `tree="@Tree.t:empty"` to tree="@tree".
+>Change `tree="@Tree.t:empty"` to `tree="@tree"`.
 
-The model is almost ready, but we want to add one last set of arguments to it. Our rates are **piecewise constant**, and we have already specified in the `state` block how many **dimensions** (constant intervals) each of our rates will have. By default, the break points in our rates are evenly spaced between the origin and the youngest tip, meaning that all of the intervals are the same length. However, we can add arguments to our model specifying when we would like our break points to be. For us, it makes sense to place these break points at the boundaries of geological intervals, so that we estimate a rate for each interval. As mentioned before, we are going to align our break points to the boundaries between the Triassic, Jurassic, Early Cretaceous and Late Cretaceous. To do this, we need to supply vectors of these times relative to the phylogeny. We are assuming that the youngest tip, at which `t=0`, lies at the Cretaceous-Paleogene boundary, so the vectors describe the cumulative duration of these geological intervals relative to this boundary. We need to specify a vector for each of our rates.
+The model is almost ready, but we want to add one last set of arguments to it. Our rates are **piecewise constant**, and we have already specified in the `state` block how many **dimensions** (constant intervals) each of our rates will have. By default, the break points in our rates are evenly spaced between the origin and the youngest tip, meaning that all of the intervals are the same length. However, we can add arguments to our model specifying when we would like our break points to be. For us, it makes sense to place these break points at the boundaries of geological intervals, so that we estimate a rate for each interval. As mentioned before, we are going to align our break points to the boundaries between the Triassic, Jurassic, Early Cretaceous and Late Cretaceous. To do this, we need to supply vectors of these times relative to the phylogeny. We are assuming that the youngest tip, at which `t=0`, lies at the Cretaceous-Paleogene boundary, so the vectors describe the cumulative duration of these geological intervals relative to this boundary. We need to specify a separate vector for each of our rates.
 
 >Add to the end of the model line
 >
@@ -223,11 +223,16 @@ The model is almost ready, but we want to add one last set of arguments to it. O
 >samplingRateChangeTimes="0 32.55 77.05 133.35"
 >```
 	
-In the line beneath our model, you will see a line which sets the `samplingRate` to 0. This refers to fossil sampling, which we have now introduced into our model, so this line needs to be removed.
-		
+Beneath our model, you will see a line which sets the `samplingRate` to 0. This refers to fossil sampling, which we have now introduced into our model, so this line needs to be removed.
+
+In its place, we instead need to add an instruction to the XML about the direction of time. BEAST2 assumes that time runs from the present backwards, as is the case in coalescent models. But in birth-death models, time instead runs forward, and we need to specify this using `reverseTimeArrays`. Here, we are telling the model to use the opposite direction of time to the conventional one in five dimensions: in order, this refers to our three rate parameters (`birth`, `death` and `sampling`) plus `rho` and the `removalProbability` (which we do not need but will specify anyway).
+
 >Remove the line fixing `samplingRate` to 0:
 >
 >`<parameter id="samplingRateBDS.t:empty" spec="parameter.RealParameter" name="samplingRate">0.0</parameter>`
+>
+>Replace it with an instruction to `reverseTimeArrays`:
+>`<reverseTimeArrays id="BooleanParameter.0" spec="parameter.BooleanParameter" dimension="5">true true true true true</reverseTimeArrays>`
 
 And with that our model is complete! In summary, the model should now read (with arguments in any order):
 
@@ -245,8 +250,31 @@ And with that our model is complete! In summary, the model should now read (with
 			  birthRateChangeTimes="0 32.55 77.05 133.35"
 			  deathRateChangeTimes="0 32.55 77.05 133.35"
 			  samplingRateChangeTimes="0 32.55 77.05 133.35">
+	<reverseTimeArrays id="BooleanParameter.0" spec="parameter.BooleanParameter" dimension="5">true true true true true</reverseTimeArrays>
 	</distribution>
 	```
+
+The next part of our XML specifies the shape of our prior distributions. As long as you changed all of the `rho` references to `sampling` previously, we don't need to modify these any further; we provided all of the necessary information in BEAUti.
+
+The last part of the `distribution` block is labelled the `likelihood`, and determines how well the inferred tree fits the data. Once again, we are using a fixed phylogeny, and can remove this from our XML.
+
+>Remove the `likelihood` block from the XML:
+>
+>```xml
+> <distribution id="likelihood" spec="util.CompoundDistribution" useThreads="true">
+>             <distribution id="treeLikelihood.empty" spec="ThreadedTreeLikelihood" data="@empty" tree="@Tree.t:empty">
+>                 <siteModel id="SiteModel.s:empty" spec="SiteModel">
+>                     <parameter id="mutationRate.s:empty" spec="parameter.RealParameter" estimate="false" name="mutationRate">1.0</parameter>
+>                     <parameter id="gammaShape.s:empty" spec="parameter.RealParameter" estimate="false" name="shape">1.0</parameter>
+>                     <parameter id="proportionInvariant.s:empty" spec="parameter.RealParameter" estimate="false" lower="0.0" name="proportionInvariant" upper="1.0">0.0</parameter>
+>                     <substModel id="JC69.s:empty" spec="JukesCantor"/>
+>                 </siteModel>
+>                 <branchRateModel id="StrictClock.c:empty" spec="beast.evolution.branchratemodel.StrictClockModel">
+>                     <parameter id="clockRate.c:empty" spec="parameter.RealParameter" estimate="false" name="clock.rate">1.0</parameter>
+>                 </branchRateModel>
+>             </distribution>
+>         </distribution>
+>```
 
 
 
