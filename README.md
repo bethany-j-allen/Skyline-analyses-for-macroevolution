@@ -78,7 +78,7 @@ Most of the default tabs in BEAUti relate to inferring the phylogeny, which we w
 
 The "standard" `contemporary` birth death skyline is parameterised using a reproductive number, a "become uninfectious" rate and a sampling proportion. However, here we are using the `BDSParam` model, which refers to parameterisation using a birth rate (here, speciation), a death rate (here, extinction) and an extant sampling proportion. As our phylogeny is of non-avian dinosaurs, for which we only have fossils and no extant (genetic) samples, we will later exchange the extant sampling proportion, usually denoted using {% eqinline rho %}, for a fossil sampling rate, usually denoted using {% eqinline psi %}.
 
-Choosing sensible priors for these parameters is not straightforward, so we will select priors which are relatively unrestrictive. For the birth and death rates, we will use exponential priors with a mean of 1.0; this places more probability on small rates, but still permits rates which are towards the higher end of those estimated from living animals and plants {% cite HenaoDiaz2019 --file Tutorial-Template/master-refs.bib %}. For the sampling rate, we will also choose an exponential prior, this time with a mean of 0.2.
+Choosing sensible priors for these parameters is not straightforward, so we will select priors which are relatively unrestrictive. For the birth and death rates, we will use **exponential** priors with a mean of 1.0; this places more probability on small rates, but still permits rates which are towards the higher end of those estimated from living animals and plants {% cite HenaoDiaz2019 --file Tutorial-Template/master-refs.bib %}. For the sampling rate, we will also choose an exponential prior, this time with a mean of 0.2.
 
 On the **initial =** buttons you will see two sets of square brackets. The first indicates what the starting value for that parameter will be, meaning its value in the first iteration of your chain. We need to alter our initialisation values to ensure that they sit within our prior distributions. The second contains two values which denote the limits of the range of values that our parameters are permitted to take, which are also important to consider carefully. Priors influence the probability of certain values being tested in your chain, but values which are improbable under your prior can still be selected if the signal in your data is strong enough; setting this range provides hard limits to your parameter values regardless of your priors. Our parameters are all rates, expressed per branch per million years, so the full set of values they can take ranges between 0.0 and infinity.
 
@@ -255,7 +255,15 @@ And with that our model is complete! In summary, the model should now read (with
 	</distribution>
 ```
 
-The next part of our XML specifies the shape of our prior distributions. As long as you changed all of the `rho` references to `sampling` previously, we don't need to modify these any further; we provided all of the necessary information in BEAUti.
+The next part of our XML specifies the shape of our prior distributions. As long as you changed all of the `rho` references to `sampling` previously, we don't need to modify the priors we already have any further; we provided all of the necessary information in BEAUti. We do, however, need to add a prior on our `origin`. You may remember that when specifying the parameter, we set our starting value to 200 (corresponding to 266Ma, which is on the early side of expert estimates for the origin of dinosaurs). To keep things simple, we will set the origin prior to a **uniform** distribution between 0 and 200.
+
+>Add an `origin` prior to the `priors` block:
+>
+>```xml
+> <prior id="originPrior" name="distribution" x="@origin.t:empty">
+>          <Uniform name="distr" upper="200"/>
+> </prior>
+>```
 
 The last part of the `distribution` block is labelled the `likelihood`, and determines how well the inferred tree fits the data. Once again, we are using a fixed phylogeny, and can remove this from our XML.
 
