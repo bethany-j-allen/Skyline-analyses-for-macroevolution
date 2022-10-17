@@ -225,7 +225,7 @@ The model is almost ready, but we want to add one last set of arguments to it. O
 	
 Beneath our model, you will see a line which sets the `samplingRate` to 0. This refers to fossil sampling, which we have now introduced into our model, so this line needs to be removed.
 
-In its place, we instead need to add an instruction to the XML about the direction of time. BEAST2 assumes that time runs from the present backwards, as is the case in coalescent models. But in birth-death models, time instead runs forward, and we need to specify this using `reverseTimeArrays`. Here, we are telling the model to use the opposite direction of time to the conventional one in five dimensions: in order, this refers to our three rate parameters (`birth`, `death` and `sampling`) plus `rho` and the `removalProbability` (which we do not need but will specify anyway).
+In it's place, we instead need to add an instruction to the XML about the direction of time. BEAST2 assumes that time runs from the present backwards, as is the case in coalescent models. But in birth-death models, time instead runs forward, and we need to specify this using `reverseTimeArrays`. Here, we are telling the model to use the opposite direction of time to the conventional one in five dimensions: in order, this refers to our three rate parameters (`birth`, `death` and `sampling`) plus `rho` and the `removalProbability` (which we do not need but will specify anyway).
 
 >Remove the line fixing `samplingRate` to 0:
 >
@@ -377,7 +377,19 @@ We also need to remove parameters from the `tracelog` and `screenlog` that no lo
 		
 >Remove the `treeLikelihood` and `TreeHeight` parameters from the `tracelog`, and add `<log idref="origin.t:empty"/>`. 
 		
-With that, our XML is ready! It's time to run the analysis in BEAST2.
+With that, our XML is ready!
+
+>**Save** all changes to your XML file and close it.
+
+We can now run the analysis in BEAST2. It's important to have `Lloyd.tree` saved somewhere that BEAST2 can access it.
+
+>Download and save `Lloyd.tree` in the same folder as your BEAST2 program. Open the program and select `dinosaur_BDSKY.xml` (or `dinosaur_BDSKY_final.xml` if you're using our ready-made version). If you have **BEAGLE** installed tick the box to **Use BEAGLE library if available**, which will make the run faster. Hit **Run** to start the analysis.
+>
+>**OR**
+>
+>Download and save `Lloyd.tree` in a folder of your choosing, preferably the one also containing your XML file. Find the BEAST2 executable in **BEAST_2.X.X** (depending on your version) ** > bin**. Right-click on the **beast** executable and select **Create shortcut** on Windows or **Make alias** on Mac. Cut and paste the created shortcut/alias into the folder containing your analysis files. If you open your **terminal** and navigate to the folder containing your files, you should now be able to run the analysis through the terminal using `beast dinosaur_BDSKY.xml` (or `beast dinosaur_BDSKY_final.xml` if you're using our ready-made version).
+
+The analysis should take about XX minutes to run.
 
 ### Setting up the Exponential Coalescent skyline analysis
 
