@@ -176,9 +176,9 @@ The next block, `init`, describes the initialisation processes, namely construct
 >    </init>
 >```
 
-The next block of the XML is arguably the most important: it defines the prior and posterior distributions of our analysis, including the model we are using. The model itself lies in the third nested `distribution` line, labelled `BirthDeathSkyContemporaryBDSParam`. With the addition of line breaks to aid readability, it should currently look like this:
+The next block of the XML is arguably the most important: it defines the **prior and posterior distributions** of our analysis, including the **model** we are using. The model itself lies in the third nested `distribution` line, labelled `BirthDeathSkyContemporaryBDSParam`. With the addition of line breaks to aid readability, it should currently look like this:
 
-	```xml
+```xml
 	<distribution id="BirthDeathSkyContemporaryBDSParam.t:empty"
                           spec="beast.evolution.speciation.BirthDeathSkylineModel"
                           birthRate="@birthRateBDS.t:empty"
@@ -187,7 +187,7 @@ The next block of the XML is arguably the most important: it defines the prior a
                           deathRate="@deathRateBDS.t:empty"
                           sampling="@samplingBDS.t:empty"
                           tree="@Tree.t:empty">
-	```
+```
 
 Although perhaps initially intimidating, we will walk through the various arguments here and what they mean. The model will also require some tweaking to fit our intended usage.
 
@@ -215,7 +215,7 @@ The last argument currently in the model line links the tree into the model. We 
 
 The model is almost ready, but we want to add one last set of arguments to it. Our rates are **piecewise constant**, and we have already specified in the `state` block how many **dimensions** (constant intervals) each of our rates will have. By default, the break points in our rates are evenly spaced between the origin and the youngest tip, meaning that all of the intervals are the same length. However, we can add arguments to our model specifying when we would like our break points to be. For us, it makes sense to place these break points at the boundaries of geological intervals, so that we estimate a rate for each interval. As mentioned before, we are going to align our break points to the boundaries between the Triassic, Jurassic, Early Cretaceous and Late Cretaceous. To do this, we need to supply vectors of these times relative to the phylogeny. We are assuming that the youngest tip, at which `t=0`, lies at the Cretaceous-Paleogene boundary, so the vectors describe the cumulative duration of these geological intervals relative to this boundary. We need to specify a separate vector for each of our rates.
 
->Add to the end of the model line
+>Add to the end of the model line:
 >
 >```xml
 >birthRateChangeTimes="0 32.55 77.05 133.35"
@@ -232,11 +232,12 @@ In its place, we instead need to add an instruction to the XML about the directi
 >`<parameter id="samplingRateBDS.t:empty" spec="parameter.RealParameter" name="samplingRate">0.0</parameter>`
 >
 >Replace it with an instruction to `reverseTimeArrays`:
+>
 >`<reverseTimeArrays id="BooleanParameter.0" spec="parameter.BooleanParameter" dimension="5">true true true true true</reverseTimeArrays>`
 
 And with that our model is complete! In summary, the model should now read (with arguments in any order):
 
-	```xml
+```xml
 	<distribution id="BirthDeathSkyContemporaryBDSParam.t:empty"
                           spec="beast.evolution.speciation.BirthDeathSkylineModel"
 			  origin="origin.t:empty"
@@ -252,7 +253,7 @@ And with that our model is complete! In summary, the model should now read (with
 			  samplingRateChangeTimes="0 32.55 77.05 133.35">
 	<reverseTimeArrays id="BooleanParameter.0" spec="parameter.BooleanParameter" dimension="5">true true true true true</reverseTimeArrays>
 	</distribution>
-	```
+```
 
 The next part of our XML specifies the shape of our prior distributions. As long as you changed all of the `rho` references to `sampling` previously, we don't need to modify these any further; we provided all of the necessary information in BEAUti.
 
@@ -276,7 +277,73 @@ The last part of the `distribution` block is labelled the `likelihood`, and dete
 >         </distribution>
 >```
 
-
+The penultimate block of the XML describes our **operators**. These define the moves that are used to propose new parameter values in the next iteration of the MCMC, so are fundamentally important to how our chain explores parameter space. Some are relevant to tree construction, so we can remove these.
+		
+>Remove the tree operators:
+>
+>```xml
+> <operator id="BDSKY_contemp_bds_treeScaler.t:empty" spec="ScaleOperator" scaleFactor="0.5" tree="@Tree.t:empty" weight="3.0"/>
+> <operator id="BDSKY_contemp_bds_treeRootScaler.t:empty" spec="ScaleOperator" rootOnly="true" scaleFactor="0.5" tree="@Tree.t:empty" weight="3.0"/>
+> <operator id="BDSKY_contemp_bds_UniformOperator.t:empty" spec="Uniform" tree="@Tree.t:empty" weight="30.0"/>
+> <operator id="BDSKY_contemp_bds_SubtreeSlide.t:empty" spec="SubtreeSlide" tree="@Tree.t:empty" weight="15.0"/>
+> <operator id="BDSKY_contemp_bds_narrow.t:empty" spec="Exchange" tree="@Tree.t:empty" weight="15.0"/>
+> <operator id="BDSKY_contemp_bds_wide.t:empty" spec="Exchange" isNarrow="false" tree="@Tree.t:empty" weight="3.0"/>
+> <operator id="BDSKY_contemp_bds_WilsonBalding.t:empty" spec="WilsonBalding" tree="@Tree.t:empty" weight="3.0"/>
+>```
+		
+The next three operators are all labelled `ScaleOperator`, and when fired, scale the values of our `death`, `sampling` and `birth` rates respectively. At the end of the lines, you can see a `weight` specified. This defines how often these operators fire relative to each other. As all three of these rates are important to us, and we want to ensure that we have explored their parameter space equally, we will make their weights equal.
+	
+>Change the `weight` of the `deathRateScaler`, `samplingScaler`, and `birthRateScaler` to 10.0.
+		
+One thing we are currently missing is a `ScaleOperator` for our additional parameter, the `origin`, so we will add one. The timing of the origin is less important to us than our three rates, so we will give its operator a smaller weight.
+		
+>Add an `originScaler` to the `operator` block:
+>
+>`<operator id="BDSKY_contemp_bds_originScaler.t:empty" spec="ScaleOperator" parameter="@origin.t:empty" weight="3.0"/>`
+		
+These operators are currently set to scale each of the **dimensions** in our rate vectors individually, but we can also add operators which scale all of the dimensions in our vectors in concert. This could prove useful in quickly determining the typical size of our rates. This can be done by setting `scaleAll="true"` in additional `ScaleOperators`. 
+		
+>Add some `scaleAll` operators to the `operator` block:
+>
+>```xml
+> <operator id="BDSKY_contemp_bds_deathRateScalerAll.t:empty" spec="ScaleOperator" parameter="@deathRateBDS.t:empty" scaleAll="true" weight="10.0"/>
+> <operator id="BDSKY_contemp_bds_samplingScalerAll.t:empty" spec="ScaleOperator" parameter="@samplingBDS.t:empty" scaleAll="true" weight="10.0"/>
+> <operator id="BDSKY_contemp_bds_birthRateScalerAll.t:empty" spec="ScaleOperator" parameter="@birthRateBDS.t:empty" scaleAll="true" weight="10.0"/>
+>```
+		
+Beneath the `ScaleOperators` you can see one more operator, an `UpDownOperator`. It has `up` and `down` arguments, which are specified as our `birth` and `death` rates respectively. As currently defined, when this operator fires, it increases the birth rate and decreases the death rate. This operator can be very useful in cases where we expect two of our parameters to be correlated with one another, as speciation and extinction rates often are {% cite HenaoDiaz2019 --file Tutorial-Template/master-refs.bib %}. However, the current parameterisation places a negative directionality on this relationship, whereas we would actually expect higher speciation rates to be matched by higher extinction rates. Instead, we are going to raise our birth and death rates in concert, and instead decrease our sampling rate. We will also increase the weight of this operator to match that of our `scaleOperators`.
+		
+>Change the `UpDownOperator` parameterisation from:
+>
+>```xml
+> <operator id="BDSKY_contemp_bds_updownBD.t:empty" spec="UpDownOperator" scaleFactor="0.75" weight="2.0">
+>        <up idref="birthRateBDS.t:empty"/>
+>        <down idref="deathRateBDS.t:empty"/>
+>    </operator>
+>```
+>
+> to:
+>
+>```xml
+> <operator id="BDSKY_contemp_bds_updownBD.t:empty" spec="UpDownOperator" scaleFactor="0.75" weight="10.0">
+>        <up idref="birthRateBDS.t:empty"/>
+>        <up idref="deathRateBDS.t:empty"/>
+>	 <down idref="samplingBDS.t:empty"/>
+>    </operator>
+>```
+		
+And finally we reach the last block of the XML, which determines the **logs** outputted by our BEAST2 analysis. We can see a `tracelog`, which records our parameters to a log file, a `screenlog`, which provides settings on what is printed to the screen during the analysis, and a `treelog`, which records the trees sampled during our analysis. Our `treelog` would simply save identical versions of our input tree, so to save on file space we will remove it. We will also remove the `OperatorSchedule` - this can be useful for fine-tuning operators but we do not need it here.
+		
+>Remove the `treelog` and `OperatorSchedule`:
+>
+>```xml
+>   <logger id="treelog.t:empty" spec="Logger" fileName="$(tree).trees" logEvery="1000" mode="tree">
+>     	<log id="TreeWithMetaDataLogger.t:empty" spec="beast.evolution.tree.TreeWithMetaDataLogger" tree="@Tree.t:empty"/>
+>   </logger>
+>   <operatorschedule id="OperatorSchedule" spec="OperatorSchedule"/>
+>```
+		
+With that, our XML is ready! It's finally time to run the analysis in BEAST2.
 
 ### Setting up the Exponential Coalescent skyline analysis
 
