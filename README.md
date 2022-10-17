@@ -149,7 +149,7 @@ In this section we need to set the limits of our origin time and its initial val
 
 >Paste in the `origin` line to the end of the `parameter`block:
 >
->`<parameter id="origin.t:empty" spec="parameter.RealParameter" lower="0.0" name="stateNode" upper="Infinity">200</parameter>`
+>`<parameter id="origin.t:empty" spec="parameter.RealParameter" lower="0.0" name="stateNode" upper="Infinity">200.0</parameter>`
 >
 >The `state` block should now look like this:
 >
@@ -197,7 +197,7 @@ The first thing to note is that we're linking the parameters we defined earlier 
 		
 We also need to link the origin parameter (which we defined earlier) into the model.
 		
->Somewhere within the model line, add `origin="origin.t:empty"`.
+>Somewhere within the model line, add `origin="@origin.t:empty"`.
 		
 The next argument to note is `conditionOnRoot="true"`. Whenever we conduct a Bayesian birth-death phylogenetic or phylodynamic analysis, we have to choose a single facet of the model which will remain fixed in some way, for all of the other parameters to move around. We describe the model as being **conditioned** on this value. Here we can see that the default value to condition on is the age of the origin (or root); as discussed earlier, this means assuming that the first divergence in our sampled phylogeny represents the "true" origin time. This might be a reasonable assumption for a well-sampled phylogeny which ideally incorporates both fossil and extant taxa, but that is not the case here, which is why we have instead chosen to infer our origin time. We must therefore choose something else to condition the model on.
 		
@@ -240,7 +240,7 @@ And with that our model is complete! In summary, the model should now read (with
 ```xml
 	<distribution id="BirthDeathSkyContemporaryBDSParam.t:empty"
                           spec="beast.evolution.speciation.BirthDeathSkylineModel"
-			  origin="origin.t:empty"
+			  origin="@origin.t:empty"
                           birthRate="@birthRateBDS.t:empty"
 			  deathRate="@deathRateBDS.t:empty"
                           samplingRate="@samplingBDS.t:empty"
@@ -265,9 +265,9 @@ The next part of our XML specifies the shape of our prior distributions. As long
 > </prior>
 >```
 
-The last part of the `distribution` block is labelled the `likelihood`, and determines how well the inferred tree fits the data. Once again, we are using a fixed phylogeny, and can remove this from our XML.
+The last part of the `distribution` block is labelled the `likelihood`, and contains the `treeLikelihood`, which determines how well the inferred tree fits the data. Once again, we are using a fixed phylogeny, and can remove this from our XML. What we consider the `likelihood` in our analysis is instead how well the model parameters fit our phylogeny, so we will cut and paste our model into this part of the XML.
 
->Remove the `likelihood` block from the XML:
+>Remove the `treeLikelihood` block from the `likelihood` part of the XML:
 >
 >```xml
 > <distribution id="likelihood" spec="util.CompoundDistribution" useThreads="true">
@@ -284,6 +284,28 @@ The last part of the `distribution` block is labelled the `likelihood`, and dete
 >             </distribution>
 >         </distribution>
 >```
+>
+>Cut and paste the model into this section and remove `useThreads="true"`:
+>```xml
+> <distribution id="likelihood" spec="util.CompoundDistribution">
+>            <distribution id="BirthDeathSkyContemporaryBDSParam.t:empty"
+>                            spec="beast.evolution.speciation.BirthDeathSkylineModel"
+>                            origin="@origin.t:empty"
+>                            birthRate="@birthRateBDS.t:empty"
+>                            deathRate="@deathRateBDS.t:empty"
+>                            samplingRate="@samplingBDS.t:empty"
+>                            conditionOnSurvival="true"
+>                            conditionOnRhoSampling="false"
+>                            removalProbability="0.0"
+>                            tree="@tree"
+>                            birthRateChangeTimes="0 32.55 77.05 133.35"
+>                            deathRateChangeTimes="0 32.55 77.05 133.35"
+>                            samplingRateChangeTimes="0 32.55 77.05 133.35">
+>                            <reverseTimeArrays id="BooleanParameter.0"
+>                              spec="parameter.BooleanParameter"
+>                              dimension="5">true true true true true</reverseTimeArrays>
+>            </distribution>
+> </distribution>
 
 The penultimate block of the XML describes our **operators**. These define the moves that are used to propose new parameter values in the next iteration of the MCMC, so are fundamentally important to how our chain explores parameter space. Some are relevant to tree construction, so we can remove these.
 		
@@ -351,7 +373,11 @@ And finally we reach the last block of the XML, which determines the **logs** ou
 >   <operatorschedule id="OperatorSchedule" spec="OperatorSchedule"/>
 >```
 		
-With that, our XML is ready! It's finally time to run the analysis in BEAST2.
+We also need to remove parameters from the `tracelog` and `screenlog` that no longer exist in our XML.
+		
+>Remove the `treeLikelihood` and `TreeHeight` parameters from the `tracelog`, and add `<log idref="origin.t:empty"/>`. 
+		
+With that, our XML is ready! It's time to run the analysis in BEAST2.
 
 ### Setting up the Exponential Coalescent skyline analysis
 
