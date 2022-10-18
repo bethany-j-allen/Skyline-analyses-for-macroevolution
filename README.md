@@ -48,6 +48,8 @@ The aim of this tutorial is to:
 - Develop skills in simple XML hacking;
 - Highlight the differences between exponential coalescent and fossilised-birth-death skylines.
 
+If this tutorial has been useful to you, please consider citing {% cite Allen2023 --file Tutorial-Template/master-refs.bib %}, from which these analyses are taken.
+
 ## The data
 We will be inferring our skyline parameters using a ready-made phylogeny containing 420 dinosaur species, published by {% cite Lloyd2008 --file Tutorial-Template/master-refs.bib %}. This phylogeny is a 'supertree', created using an informal method to collate several smaller dinosaur phylogenies into a larger one. Supertrees are typically cladograms, and must be timescaled using fossil data to estimate their branch lengths. The branch lengths we use here were inferred by {% cite Sakamoto2016 --file Tutorial-Template/master-refs.bib %}: they used fossil occurrences from the [Paleobiology Database] (http://paleobiodb.org) to infer the midpoint of the temporal range of each tip, and timescaled the phylogeny using the "equal" method, which distributes time evenly between the available branches.
 
