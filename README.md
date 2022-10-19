@@ -643,166 +643,301 @@ We can now run the analysis in BEAST2. As with the exponential coalescent model,
 The analysis should take about XX minutes to run.
 
 ##Visualising the results
-
 Once the BEAST2 analyses have finished running, we will use **R** to plot our skylines. The log files are relatively easy to handle in R, so we have provided custom code for this rather than using an R package, although this code does require the **tidyverse** to be installed (specifically, we will use **dplyr** and **ggplot2**).
 
-
-
-
-
--------
-
-# Tutorial style guide
-
-## Text styling
-
-This is how to write _italic text_.
-
-This is how to write **bold text**.
-
-This is how to write **_bold and italic text_**.
-
-Do text superscripts like this 7^th, x^2y or  x^(2y + 3z).
-
-
-## Lists
-
-### Unnumbered lists
-
-- Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-- Integer pharetra arcu ut nisl mollis ultricies.
-	- Fusce nec tortor at enim cursus dictum.
-	- Phasellus nec urna quis velit eleifend convallis sodales nec augue.
-- In iaculis turpis in massa facilisis, quis ultricies nibh ultricies.
-- Nam vitae turpis eu lacus imperdiet mollis id at augue.
-- Sed sed turpis ac dolor mollis accumsan.
-
-
-### Numbered lists
-
-1. Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-2. Integer pharetra arcu ut nisl mollis ultricies.
-	1. Fusce nec tortor at enim cursus dictum.
-	2. Phasellus nec urna quis velit eleifend convallis sodales nec augue.
-1. In iaculis turpis in massa facilisis, quis ultricies nibh ultricies.
-1. Nam vitae turpis eu lacus imperdiet mollis id at augue.
-1. Sed sed turpis ac dolor mollis accumsan.
-
-### Mixed lists
-
-1. Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-2. Integer pharetra arcu ut nisl mollis ultricies.
-	* Fusce nec tortor at enim cursus dictum.
-	* Phasellus nec urna quis velit eleifend convallis sodales nec augue.
-1. In iaculis turpis in massa facilisis, quis ultricies nibh ultricies.
-1. Nam vitae turpis eu lacus imperdiet mollis id at augue.
-1. Sed sed turpis ac dolor mollis accumsan.
-
-
-## Figures
-
-
-<figure>
-	<a id="fig:example1"></a>
-	<img style="width:25%;" src="figures/Logo_bw.png" alt="">
-	<figcaption>Figure 1: This figure is 25% of the page width.</figcaption>
-</figure>
-
-
-<figure>
-	<a id="fig:example2"></a>
-	<img style="width:10%;" src="figures/Logo_bw.png" alt="">
-	<figcaption>Figure 2: This figure is only 10% of the page width.</figcaption>
-</figure>
-
-
-
-# Code
-
-A bit of inline monospaced font can be made `like this`. Larger code blocks can be made by using the code environment:
-
-Java:
-
-```java
-public class HelloWorld {
-
-    public static void main(String[] args) {
-        // Prints "Hello, World" to the terminal window.
-        System.out.println("Hello, World");
-    }
-
-}
-```
-
-XML:
-
-```xml
-	<BirthDeathSkylineModel spec="BirthDeathSkylineModel" id="birthDeath" tree="@tree" contemp="true">
-	      <parameter name="origin" id="origin" value ="100" lower="0."/>    
-	      <parameter name="R0" id="R0" value="2" lower="0." dimension ="10"/>
-	      <parameter name="becomeUninfectiousRate" id="becomeUninfectiousRate" value="1" lower="0." dimension ="10"/>
-	      <parameter name="samplingProportion" id="samplingProportion" value="0."/>
-	      <parameter name="rho" id="rho" value="1e-6" lower="0." upper="1."/>
-	</BirthDeathSkylineModel>
-```
-
-R:
+The first step is to install the `tidyverse` if you haven't previously, and then to load the package.
 
 ```R
-	> myString <- "Hello, World!"
-	> print (myString)
-	[1] "Hello, World!"
+install.packages("tidyverse")
+
+library(tidyverse)
 ```
 
-# Equations
+###The Exponential Coalescent model results
+First we will take a look at our **exponential coalescent** skyline. The log file from this analysis needs to be read into R, either with or without setting the working directory (the location where R will look for your files). We will also immediately trim the log to remove the first 10% of iterations as burn-in.
 
-Inline equations: {% eqinline \dot{x} = \sigma(y-x) %}
+```R
+# Navigate to Session > Set Working Directory > Choose Directory (on RStudio)
+# or change file name to the full path to the log file
+#(Use "dinosaur_coal_final.log" if you used our pre-cooked XML)
+coal_file <- "dinosaur_coal.log"
 
-Displayed equations: 
-{% eq \left( \sum_{k=1}^n a_k b_k \right)^2 \leq \left( \sum_{k=1}^n a_k^2 \right) \left( \sum_{k=1}^n b_k^2 \right) %}
+#Read in coalescent log and trim 10% burn-in
+coalescent <- read.table(coal_file, header = T) %>% slice_tail(prop = 0.9)
+```
 
+The next job is to summarise the values across the remaining iterations in the log. We will pivot the table so that our diversification rate estimates sit in a single column, then estimate our median and 95% **highest posterior density** (HPD; Bayesian "confidence intervals") values within each time bin.
 
+```R
+#Pivot the table to stack the rate estimates into a single column
+coalescent <- pivot_longer(coalescent, c(growthRate1, growthRate2, growthRate3,
+                                   growthRate4),
+                         names_to = "time_bin", names_prefix = "growthRate")
 
-## Instruction boxes
+#Summarise the rates in the log
+coalescent_summary <- coalescent %>% group_by(time_bin) %>%
+  summarise(median = median(value),
+            lowCI = quantile(value, 0.025),
+            highCI = quantile(value, 0.975))
+```
 
-Use block-quotes for step-by-step instruction that the user should perform (this will produce a framed box on the website):
+We will also add a column which converts the numbers of our time bins into their interval names: as coalescent models run from the phylogeny tips backwards in time, our "first" time bin is the youngest and our "fourth" time bin is the oldest. We will also tell R that these intervals have a set order, and specify it.
 
-> The data we have is not the data we want, and the data we need is not the data we have.
-> 
-> We can input **any** formatted text in here:
->
-> - Even
-> - Lists
->
-> or equations:
->
-> {% eq (x_1, \ldots, x_n) \left( \begin{array}{ccc}
-      \phi(e_1, e_1) & \cdots & \phi(e_1, e_n) \\
-      \vdots & \ddots & \vdots \\
-      \phi(e_n, e_1) & \cdots & \phi(e_n, e_n)
-    \end{array} \right)
-  \left( \begin{array}{c}
-      y_1 \\
-      \vdots \\
-      y_n
-    \end{array} \right) %}
+```R
+#Add the interval names
+coalescent_summary$interval <- c("Late Cretaceous", "Early Cretaceous",
+                                 "Jurassic", "Triassic")
+				 
 
+#Ensure that the time intervals plot in the correct order
+coalescent_summary$interval <- factor(coalescent_summary$interval,
+                                      levels = c("Triassic", "Jurassic",
+                                                 "Early Cretaceous",
+                                                 "Late Cretaceous"))
+```
 
+We can plot our skylines as error bars, with a discrete bar showing the range of estimated diversification rates in each time interval.
 
+```R
+#Plot diversification skyline as error bars
+ggplot(data = coalescent_summary, aes(x = interval, y = median, ymin = lowCI,
+                             ymax = highCI)) +
+  geom_point(size = 1.5) +
+  geom_errorbar(size = 1, width = 0.5) +
+  scale_colour_manual(values = c("black")) +
+  geom_hline(aes(yintercept = 0), colour = "black") +
+  scale_x_discrete(labels = function(x) str_wrap(x, width = 10)) +
+  labs(x = "Interval", y = "Diversification rate") +
+  theme_classic(base_size = 17)
+ ```
+ 
+Alternatively, we can plot the skylines as continuous by extending our estimates across the temporal duration of each time interval, in a **piecewise constant** skyline.
 
+```R
+#Plot diversification skyline as a ribbon plot
+ages <- seq.int(252, 66)
+interval <- c(rep("Triassic", ((252 - 202) + 1)),
+              rep("Jurassic", ((201 - 146) + 1)),
+              rep("Early Cretaceous", ((145 - 101) + 1)),
+              rep("Late Cretaceous", ((100 - 66) + 1)))
+age_table <- as.data.frame(cbind(ages, interval))
+to_plot <- left_join(coalescent_summary, age_table, by = "interval")
+to_plot$ages <- as.numeric(to_plot$ages)
 
+ggplot(to_plot) +
+  geom_ribbon(aes(x = ages, ymin = lowCI, ymax = highCI), alpha = 0.5) +
+  geom_line(aes(x = ages, y = median)) +
+  scale_x_reverse() +
+  geom_hline(aes(yintercept = 0), colour = "black") +
+  xlab("Age (Ma)") + ylab("Diversification rate") +
+  theme_classic(base_size = 17)
+ ```
+ 
+We can also investigate the other parameter estimated in the model, the estimated **effective population size** at the start of the coalescent process (which is the youngest end of the time interval). For us, this corresponds to an estimate of the **total species diversity** of non-avian dinosaurs at the Cretaceous-Paleogene boundary. Again, we can estimate the median and 95% HPD values for our diversity estimates.
 
-# Hyperlinks
+```R
+#Extract estimated diversity
+pop_data <- pull(coalescent, "ePopSize")
 
-Add links to figures like this: 
+#Summarise the diversity estimates in the log
+pop_data <- as.data.frame(rbind(c(median(pop_data), quantile(pop_data, 0.025),
+                                  quantile(pop_data, 0.975))))
+colnames(pop_data) <- c("median", "lowCI", "highCI")
+print(pop_data)
+```
 
-- [Figure 1](#fig:example1) is 25% of the page width.
-- [Figure 2](#fig:example2) is 10% of the page width. 
+###The Fossilised-Birth-Death model results
+We can now examine the results of our **fossilised-birth-death** model. Again, we need to read in the relevant log file and trim off the first 10% as burn-in.
 
-Add links to external URLs like [this](http://www.google.com). 
+```R
+# Navigate to Session > Set Working Directory > Choose Directory (on RStudio)
+# or change file name to the full path to the log file
+#(Use "dinosaur_BDSKY_final.log" if you used our pre-cooked XML)
+fbd_file <- "dinosaur_BDSKY.log"
 
-Links to equations or different sections within the same document are a little buggy.
+#Read in coalescent log and trim 10% burn-in
+fbd <- read.table(fbd_file, header = T) %>% slice_tail(prop = 0.9)
+```
 
+We parameterised this model using **birth**, **death** and **fossil sampling** rates, so these are the parameters included in our log. However, our exponential coalescent model estimated **diversification** rates. If we want to make the fairest comparison between the two models, we should do so using the same parameters. Fortunately, it is very straightforward to convert birth and death rates into diversification rates: simply, {% eqinline diversification = births - deaths %}. We can also calculate **turnover**, which describes the average duration of lineages (species) in our clade. Turnover is the ratio between births and deaths, so we will calculate it using {% eqinline turnover = births / deaths %}.
+
+```R
+#Calculate diversification and turnover
+birth_rates <- select(fbd, starts_with("birthRate"))
+death_rates <- select(fbd, starts_with("deathRate"))
+
+div_rates <- birth_rates - death_rates
+colnames(div_rates) <- paste0("divRate.",
+                              seq(1:ncol(div_rates)))
+
+TO_rates <- birth_rates / death_rates
+colnames(TO_rates) <- paste0("TORate.",
+                             seq(1:ncol(TO_rates)))
+```
+
+We can then calculate the median and 95% HPD values for our diversification and turnover estimates, just as we did before. This time, note that because the birth-death model runs from the origin forwards in time, our "first" time bin is the oldest and our "fourth" time bin is the youngest.
+
+```R
+#Pivot the table to stack the rate estimates into a single column
+div_data <- pivot_longer(div_rates,
+                         c(divRate.1, divRate.2, divRate.3, divRate.4),
+                         names_to = "time_bin", names_prefix = "divRate.")
+
+#Summarise the diversification estimates
+div_data <- div_data %>% group_by(time_bin) %>%
+  summarise(median = median(value),
+            lowCI = quantile(value, 0.025),
+            highCI = quantile(value, 0.975))
+
+#Add interval names
+div_data$interval <- c("Triassic", "Jurassic", "Early Cretaceous",
+                       "Late Cretaceous")
+
+#Pivot the table to stack the rate estimates into a single column
+turn_data <- pivot_longer(TO_rates, c(TORate.1, TORate.2, TORate.3, TORate.4),
+                          names_to = "time_bin", names_prefix = "TORate.")
+
+#Summarise the turnover estimates
+turn_data <- turn_data %>% group_by(time_bin) %>%
+  summarise(median = median(value),
+            lowCI = quantile(value, 0.025),
+            highCI = quantile(value, 0.975))
+
+#Add interval names
+turn_data$interval <- c("Triassic", "Jurassic", "Early Cretaceous",
+                        "Late Cretaceous")
+```
+
+We can also use this same process to examine our fossil sampling rates.
+
+```R
+#Pivot the table to stack the rate estimates into a single column
+samp_data <- select(fbd, starts_with("sampling"))
+samp_data <- pivot_longer(samp_data, c(samplingBDS.1, samplingBDS.2,
+                                       samplingBDS.3, samplingBDS.4),
+                          names_to = "time_bin", names_prefix = "samplingBDS.")
+
+#Summarise log
+samp_data <- samp_data %>% group_by(time_bin) %>%
+  summarise(median = median(value),
+            lowCI = quantile(value, 0.025),
+            highCI = quantile(value, 0.975))
+
+#Add interval names
+samp_data$interval <- c("Triassic", "Jurassic", "Early Cretaceous",
+                        "Late Cretaceous")
+```
+
+Once again, we will make sure that we specify the order of our time intervals.
+
+```R
+#Ensure that the time intervals plot in the correct order
+div_data$interval <- factor(div_data$interval,
+                            levels = c("Triassic", "Jurassic",
+                                       "Early Cretaceous", "Late Cretaceous"))
+
+turn_data$interval <- factor(turn_data$interval,
+                             levels = c("Triassic", "Jurassic",
+                                        "Early Cretaceous", "Late Cretaceous"))
+
+samp_data$interval <- factor(samp_data$interval,
+                             levels = c("Triassic", "Jurassic",
+                                        "Early Cretaceous", "Late Cretaceous"))
+```
+
+Again we have provided code so that the skylines can be plotted as discrete error bars...
+
+```R
+#Plot skylines as error bars
+ggplot(data = div_data, aes(x = interval, y = median, ymin = lowCI,
+                                      ymax = highCI)) +
+  geom_point(size = 1.5) +
+  geom_errorbar(size = 1, width = 0.5) +
+  scale_colour_manual(values = c("black")) +
+  geom_hline(aes(yintercept = 0), colour = "black") +
+  scale_x_discrete(labels = function(x) str_wrap(x, width = 10)) +
+  labs(x = "Interval", y = "Diversification rate") +
+  theme_classic(base_size = 17)
+
+ggplot(data = turn_data, aes(x = interval, y = median, ymin = lowCI,
+                            ymax = highCI)) +
+  geom_point(size = 1.5) +
+  geom_errorbar(size = 1, width = 0.5) +
+  scale_colour_manual(values = c("black")) +
+  geom_hline(aes(yintercept = 1), colour = "black") +
+  scale_x_discrete(labels = function(x) str_wrap(x, width = 10)) +
+  labs(x = "Interval", y = "Turnover rate") +
+  theme_classic(base_size = 17)
+
+ggplot(data = samp_data, aes(x = interval, y = median, ymin = lowCI,
+                            ymax = highCI)) +
+  geom_point(size = 1.5) +
+  geom_errorbar(size = 1, width = 0.5) +
+  scale_colour_manual(values = c("black")) +
+  geom_hline(aes(yintercept = 0), colour = "black") +
+  scale_x_discrete(labels = function(x) str_wrap(x, width = 10)) +
+  labs(x = "Interval", y = "Sampling rate") +
+  theme_classic(base_size = 17)
+```
+
+...but also as **piecewise constant** skylines using ribbon plots.
+
+```R
+#Plot skylines as a ribbon plot
+ages <- seq.int(252, 66)
+interval <- c(rep("Triassic", ((252 - 202) + 1)),
+              rep("Jurassic", ((201 - 146) + 1)),
+              rep("Early Cretaceous", ((145 - 101) + 1)),
+              rep("Late Cretaceous", ((100 - 66) + 1)))
+age_table <- as.data.frame(cbind(ages, interval))
+
+div_plot <- left_join(div_data, age_table, by = "interval")
+div_plot$ages <- as.numeric(div_plot$ages)
+ggplot(div_plot) +
+  geom_ribbon(aes(x = ages, ymin = lowCI, ymax = highCI), alpha = 0.5) +
+  geom_line(aes(x = ages, y = median)) +
+  scale_x_reverse() +
+  geom_hline(aes(yintercept = 0), colour = "black") +
+  xlab("Age (Ma)") + ylab("Diversification rate") +
+  theme_classic(base_size = 17)
+
+turn_plot <- left_join(turn_data, age_table, by = "interval")
+turn_plot$ages <- as.numeric(turn_plot$ages)
+ggplot(turn_plot) +
+  geom_ribbon(aes(x = ages, ymin = lowCI, ymax = highCI), alpha = 0.5) +
+  geom_line(aes(x = ages, y = median)) +
+  scale_x_reverse() +
+  geom_hline(aes(yintercept = 1), colour = "black") +
+  xlab("Age (Ma)") + ylab("Turnover rate") +
+  theme_classic(base_size = 17)
+
+samp_plot <- left_join(samp_data, age_table, by = "interval")
+samp_plot$ages <- as.numeric(samp_plot$ages)
+ggplot(samp_plot) +
+  geom_ribbon(aes(x = ages, ymin = lowCI, ymax = highCI), alpha = 0.5) +
+  geom_line(aes(x = ages, y = median)) +
+  scale_x_reverse() +
+  geom_hline(aes(yintercept = 0), colour = "black") +
+  xlab("Age (Ma)") + ylab("Sampling rate") +
+  theme_classic(base_size = 17)
+```
+
+We can also examine the last parameter in our fossilised-birth-death model, which is the **origin** of our clade, dinosaurs.
+
+```R
+#Extract origin data
+origin_data <- pull(fbd, "origin")
+
+#Summarise the origin estimates in the log
+origin_data <- as.data.frame(rbind(c((median(origin_data) + 66),
+                                     (quantile(origin_data, 0.025) + 66),
+                                     (quantile(origin_data, 0.975) + 66))))
+colnames(origin_data) <- c("median", "lowCI", "highCI")
+print(origin_data)
+```
+
+###Model comparison
+If we compare the skylines generated using our exponential coalescent and fossilised-birth-death models, we can see that they do not reconstruct the same diversification trajectory for dinosaurs across their evolutionary history. The exponential coalescent model indicates that the dinosaurs were experiencing negative diversification (net loss of species) during the Late Cretaceous, even prior to their total extinction at the Cretaceous-Paleogene boundary. In contrast, the fossilised-birth-death model suggests that the dinosaurs may have been in decline in the Early Cretaceous, but had returned to net diversification by the Late Cretaceous. One possible reason for this is that the fossilised-birth-death model includes fossil sampling rate as a parameter, whereas the exponential coalescent model simply assumes that there is no relationship between the sampling process and species richness, which may not be the case. Understanding the assumptions of the models we apply, and how well these assumptions fit our data, is therefore essential in Bayesian phylodynamics.
 
 ----
 
