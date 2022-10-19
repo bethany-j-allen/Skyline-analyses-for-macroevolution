@@ -2,7 +2,7 @@
 author: Bethany J. Allen
 level: Intermediate
 title: Skyline analyses for macroevolution
-subtitle: Applying BDSKY to species phylogenies
+subtitle: Estimating evolutionary parameters from species phylogenies
 beastversion: 2.6.6
 ---
 
