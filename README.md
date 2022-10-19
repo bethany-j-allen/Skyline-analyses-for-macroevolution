@@ -45,7 +45,7 @@ In this tutorial we will estimate diversification rates for dinosaurs using a pr
 
 The aim of this tutorial is to:
 - Learn how to set up a skyline analysis using a previously made phylogeny;
-- Develop skills in simple XML hacking;
+- Develop skills in XML hacking;
 - Highlight the differences between exponential coalescent and fossilised-birth-death skylines.
 
 If this tutorial has been useful to you, please consider citing {% cite Allen2023 --file Tutorial-Template/master-refs.bib %}, from which these analyses are taken.
@@ -82,7 +82,7 @@ Most of the default tabs in BEAUti relate to inferring the phylogeny, which we w
 
 Here we see that the model has two parameters, `ePopSize` and `growthRate`. `ePopSize` refers to the **effective population size** at the start of the coalescent process. Because coalescent models consider time from the present backwards (see **Skyline plots** tutorial), this therefore refers to the size of the population at the end of our youngest time interval. The tips in our phylogeny are species, and so in this context, our effective population size can be considered to be analogous to **total species richness**. Our `growthRate` is simply our **diversification rate**.
 
-We actually only need the population size prior, and will remove the growth rate prior later. The default `ePopSize` prior is a 1/X (or `OneOnX`), which is a good choice when you have little knowledge about what the shape of your prior should be, placing reduced probability on higher values. We will keep the shape of this prior as the default, but change the starting values, meaning the value of the parameters in their first iterations of the chain. We will set the starting `ePopSize` to 1, and the `growthRate` to 0.
+We actually only need the population size prior, and will remove the growth rate prior later. The default `ePopSize` prior is a 1/X (or `OneOnX`), which is a good choice when you have little knowledge about what the shape of your prior should be, placing reduced probability on higher values. We will keep the shape of this prior as the default, but change the initialisation values (the value of the parameters in their first iteration of the chain). We will set the starting `ePopSize` to 1, and the `growthRate` to 0.
 
 >Click on the **initial =** button for `ePopSize` and change the **initialisation value** to 1.0.
 >
@@ -180,7 +180,7 @@ The next block of the XML is arguably the most important: it defines the **prior
 </distribution>
 ```
 
-The arguments determine the model to be used, and link the two parameters in the model, `growthRate` and `popSize`, to our definitions of them elsewhere in the XML. We can see that at present, the model uses a single growth rate for the full duration of the coalescent process. Instead of using this model, we are going to use a variation which is available in the package **feast**. The model is described as a `CompoundPopulationModel`, and allows multiple intervals to be defined over the course of our coalescent process, each of which can have their own growth rate. This will enable us to estimate a different diversification rate for each of our four time intervals of interest. The basic parameterisation of the model, as described on the [feast Github page] (https://github.com/tgvaughan/feast), is as follows:
+The arguments determine the model to be used, and link the two parameters in the model, `growthRate` and `popSize`, to our definitions of them elsewhere in the XML. We can see that at present, the model uses a single growth rate for the full duration of the coalescent process. Instead of using this model, we are going to use a variation on it which is available in the package **feast**. This model is described as a `CompoundPopulationModel`, and allows multiple intervals to be defined over the course of our coalescent process, each of which can have their own growth rate. This will enable us to estimate a different diversification rate for each of our four time intervals of interest. The basic parameterisation of the model, as described on the [feast Github page] (https://github.com/tgvaughan/feast), is as follows:
 
 ```xml
 <populationModel spec="CompoundPopulationModel">
@@ -191,15 +191,15 @@ The arguments determine the model to be used, and link the two parameters in the
 </populationModel>
 ```
 
-We will be changing the `ConstantPopulation` specification to `ExponentialGrowth`, to match our current model. We can also link the size of the population at the end of one interval as the starting population size in the next, using the `makeContinuous="true"` argument.	
+We will be changing the `ConstantPopulation` specification to `ExponentialGrowth`, to match our current model. We will also link the size of the population at the end of one interval as the starting population size in the next, using the `makeContinuous="true"` argument.	
 	
-As well as defining three time intervals here, you can also see an object called `changeTimes`. Here we can provide a vector which describes when the boundaries between our time intervals should be, so it is easy for us to define these as our geological interval boundaries. The vector needs to provide the boundaries relative to the timescale of the phylogeny. We are assuming that the youngest tip lies at the Cretaceous-Paleogene boundary, so the times will need to describe the cumulative duration of these geological intervals relative to this boundary.
+As well as defining models for three time intervals here, you can also see an object called `changeTimes`. Here we can provide a vector which describes when the boundaries between our time intervals should be, so it is easy for us to set these as our geological interval boundaries. The vector needs to provide the boundaries relative to the timescale of the phylogeny. We are assuming that the youngest tip lies at the Cretaceous-Paleogene boundary, so the times will need to describe the cumulative duration of these geological intervals relative to this boundary.
 
 >Replace the current `populationModel` with the following:
 >
 >```xml
 > <populationModel spec="feast.popmodels.CompoundPopulationModel" makeContinuous="true">
->           <populationModel spec="ExponentialGrowth" popSize="@startPopSize" growthRate="@growthRate1"/>
+>           <populationModel spec="ExponentialGrowth" popSize="@ePopSize" growthRate="@growthRate1"/>
 >           <populationModel spec="ExponentialGrowth" popSize="1.0" growthRate="@growthRate2"/>
 >           <populationModel spec="ExponentialGrowth" popSize="1.0" growthRate="@growthRate3"/>
 >           <populationModel spec="ExponentialGrowth" popSize="1.0" growthRate="@growthRate4"/>
@@ -220,7 +220,7 @@ The model block should now look like this:
 ```xml
 <distribution id="likelihood" spec="Coalescent">
 	<populationModel spec="feast.popmodels.CompoundPopulationModel" makeContinuous="true">
-           <populationModel spec="ExponentialGrowth" popSize="@startPopSize" growthRate="@growthRate1"/>
+           <populationModel spec="ExponentialGrowth" popSize="@ePopSize" growthRate="@growthRate1"/>
            <populationModel spec="ExponentialGrowth" popSize="1.0" growthRate="@growthRate2"/>
            <populationModel spec="ExponentialGrowth" popSize="1.0" growthRate="@growthRate3"/>
            <populationModel spec="ExponentialGrowth" popSize="1.0" growthRate="@growthRate4"/>
@@ -230,7 +230,93 @@ The model block should now look like this:
 </distribution>
 ```
 	
+In the next few lines of our XML we can see that the shape of our prior distributions are defined. As mentioned before, we will keep the prior for `ePopSize` as the default 1/X. However, we are defining the shape of our `growthRate` parameters within our model so we can remove this prior from the XML.
 
+>To tidy up, cut the `<distribution id="prior" spec="util.CompoundDistribution">` line from above the model block and paste it below this block (immediately above the `ePopSize` prior).
+>
+>Remove the `growthRate` prior:
+>
+>```xml
+> <prior id="GrowthRatePrior.t:empty" name="distribution" x="@growthRate.t:empty">
+>                <OneOnX id="OneOnX.3" name="distr"/>
+> </prior>
+>```
+
+The last part of the `distribution` block is labelled the `likelihood`, and contains the `treeLikelihood`, which determines how well the inferred tree fits the data. As we are using a fixed phylogeny, we can remove this from our XML (we have already renamed our model the `likelihood` anyway).
+
+>Remove the `likelihood` block containing the `treeLikelihood`:
+>
+>```xml
+> <distribution id="likelihood" spec="util.CompoundDistribution" useThreads="true">
+>   <distribution id="treeLikelihood.empty" spec="ThreadedTreeLikelihood" data="@empty" tree="@Tree.t:empty">
+>     <siteModel id="SiteModel.s:empty" spec="SiteModel">
+>       <parameter id="mutationRate.s:empty" spec="parameter.RealParameter" estimate="false" name="mutationRate">1.0</parameter>
+>       <parameter id="gammaShape.s:empty" spec="parameter.RealParameter" estimate="false" name="shape">1.0</parameter>
+>       <parameter id="proportionInvariant.s:empty" spec="parameter.RealParameter" estimate="false" lower="0.0" name="proportionInvariant" upper="1.0">0.0</parameter>
+>       <substModel id="JC69.s:empty" spec="JukesCantor"/>
+>     </siteModel>
+>     <branchRateModel id="StrictClock.c:empty" spec="beast.evolution.branchratemodel.StrictClockModel">
+>       <parameter id="clockRate.c:empty" spec="parameter.RealParameter" estimate="false" name="clock.rate">1.0</parameter>
+>     </branchRateModel>
+>   </distribution>
+> </distribution>
+>```
+
+The penultimate block of the XML describes our **operators**. These define the moves that are used to propose new parameter values in the next iteration of the MCMC, so are fundamentally important to how our chain explores parameter space. Some are relevant to tree construction, so we can remove these.
+		
+>Remove the tree operators:
+>
+>```xml
+> <operator id="CoalescentExponentialTreeScaler.t:empty" spec="ScaleOperator" scaleFactor="0.5" tree="@Tree.t:empty" weight="3.0"/>
+> <operator id="CoalescentExponentialTreeRootScaler.t:empty" spec="ScaleOperator" rootOnly="true" scaleFactor="0.5" tree="@Tree.t:empty" weight="3.0"/>
+> <operator id="CoalescentExponentialUniformOperator.t:empty" spec="Uniform" tree="@Tree.t:empty" weight="30.0"/>
+> <operator id="CoalescentExponentialSubtreeSlide.t:empty" spec="SubtreeSlide" tree="@Tree.t:empty" weight="15.0"/>
+> <operator id="CoalescentExponentialNarrow.t:empty" spec="Exchange" tree="@Tree.t:empty" weight="15.0"/>
+> <operator id="CoalescentExponentialWide.t:empty" spec="Exchange" isNarrow="false" tree="@Tree.t:empty" weight="3.0"/>
+> <operator id="CoalescentExponentialWilsonBalding.t:empty" spec="WilsonBalding" tree="@Tree.t:empty" weight="3.0"/>
+>```
+
+The next operator is a `ScaleOperator` which, when fired, **scales** the value of our `ePopSize` parameter. This is followed by a `RealRandomWalkOperator`, which alters our `growthRate` parameter via a **random walk** process. The first thing we will do is ensure that we have a `RealRandomWalkOperator` for each of our four growth rates.
+
+>Copy and paste the `RealRandomWalkOperator` three times, and change the `id` and `parameter` names to our four separate growth rates, to create this:
+>
+>```xml
+> <operator id="GrowthRateRandomWalk1.t:empty" spec="RealRandomWalkOperator" parameter="@growthRate1" weight="3.0" windowSize="1.0"/>
+> <operator id="GrowthRateRandomWalk2.t:empty" spec="RealRandomWalkOperator" parameter="@growthRate2" weight="3.0" windowSize="1.0"/>
+> <operator id="GrowthRateRandomWalk3.t:empty" spec="RealRandomWalkOperator" parameter="@growthRate3" weight="3.0" windowSize="1.0"/>
+> <operator id="GrowthRateRandomWalk4.t:empty" spec="RealRandomWalkOperator" parameter="@growthRate4" weight="3.0" windowSize="1.0"/>
+>```
+
+Towards the end of each operator, you can see a `weight` specified. This defines how often these operators fire relative to each other. All of the weights have a value of 3.0, meaning that they are equally likely to fire. This is a reasonable set-up for our analysis so we will leave these values as they are.
+
+And finally we reach the last block of the XML, which determines the **logs** outputted by our BEAST2 analysis. We can see a `tracelog`, which records our parameters to a log file, a `screenlog`, which provides settings on what is printed to the screen during the analysis, and a `treelog`, which records the trees sampled during our analysis. Our `treelog` would simply save identical versions of our input tree, so to save on file space we will remove it. We will also remove the `OperatorSchedule` - this can be useful for fine-tuning operators but we do not need it here.
+
+>Remove the `treelog` and `operatorschedule`:
+>
+>```xml
+> <logger id="treelog.t:empty" spec="Logger" fileName="$(tree).trees" logEvery="1000" mode="tree">
+>        <log id="TreeWithMetaDataLogger.t:empty" spec="beast.evolution.tree.TreeWithMetaDataLogger" tree="@Tree.t:empty"/>
+> </logger>
+> <operatorschedule id="OperatorSchedule" spec="OperatorSchedule"/>
+>```
+
+We also need to remove parameters from the `tracelog` and `screenlog` that no longer exist in our XML, and ensure that we are logging all four of our `growthRate` parameters.
+		
+>Remove the `treeLikelihood`, `TreeHeight`, and `CoalescentExponential` parameters from the `tracelog`. Copy and paste <log idref="growthRate.t:empty"/> three times, changing the `idref` to `growthRate1`, `growthRate2`, `growthRate3`, and `growthRate4`.
+		
+With that, our XML is ready!
+
+>**Save** all changes to your XML file and close it.
+
+We can now run the analysis in BEAST2. It's important to have `Lloyd.tree` saved somewhere that BEAST2 can access it.
+
+>Download and save `Lloyd.tree` in the same folder as your BEAST2 program. Open the program and select `dinosaur_coal.xml` (or `dinosaur_coal_final.xml` if you're using our ready-made version). If you have **BEAGLE** installed tick the box to **Use BEAGLE library if available**, which will make the run faster. Hit **Run** to start the analysis.
+>
+>**OR**
+>
+>Download and save `Lloyd.tree` in a folder of your choosing, preferably the one also containing your XML file. Find the BEAST2 executable in **BEAST_2.X.X** (depending on your version) **> bin**. Right-click on the **beast** executable and select **Create shortcut** on Windows or **Make alias** on Mac. Cut and paste the created shortcut/alias into the folder containing your analysis files. If you open your **terminal** and navigate to the folder containing your files, you should now be able to run the analysis through the terminal using `beast dinosaur_coal.xml` (or `beast dinosaur_coal_final.xml` if you're using our ready-made version).
+
+The analysis should take about XX minutes to run. In the meantime, you can start setting up the fossilised-birth-death XML.
 
 ## Setting up the Fossilised-Birth-Death Skyline analysis
 As with the exponential coalscent model, many of the features we will need in our XML file are not yet implemented in BEAUti, but we will start our analyses by creating XML files in BEAUti.
@@ -426,7 +512,7 @@ The next part of our XML specifies the shape of our prior distributions. As long
 > </prior>
 >```
 
-The last part of the `distribution` block is labelled the `likelihood`, and contains the `treeLikelihood`, which determines how well the inferred tree fits the data. Once again, we are using a fixed phylogeny, and can remove this from our XML. What we consider the `likelihood` in our analysis is instead how well the model parameters fit our phylogeny, so we will cut and paste our model into this part of the XML.
+As before, the last part of the `distribution` block is labelled the `likelihood`, and contains the `treeLikelihood`, which we don't need because we are using a fixed phylogeny. What we consider the `likelihood` in our analysis is instead how well the model parameters fit our phylogeny, so this time we will cut and paste our model into this part of the XML.
 
 >Remove the `treeLikelihood` block from the `likelihood` part of the XML:
 >
@@ -468,7 +554,7 @@ The last part of the `distribution` block is labelled the `likelihood`, and cont
 >            </distribution>
 > </distribution>
 
-The penultimate block of the XML describes our **operators**. These define the moves that are used to propose new parameter values in the next iteration of the MCMC, so are fundamentally important to how our chain explores parameter space. Some are relevant to tree construction, so we can remove these.
+We now see the **operators**. As for the exponential coalescent model, we will remove the operators related to tree construction, which we don't need.
 		
 >Remove the tree operators:
 >
@@ -482,7 +568,7 @@ The penultimate block of the XML describes our **operators**. These define the m
 > <operator id="BDSKY_contemp_bds_WilsonBalding.t:empty" spec="WilsonBalding" tree="@Tree.t:empty" weight="3.0"/>
 >```
 		
-The next three operators are all labelled `ScaleOperator`, and when fired, scale the values of our `death`, `sampling` and `birth` rates respectively. At the end of the lines, you can see a `weight` specified. This defines how often these operators fire relative to each other. As all three of these rates are important to us, and we want to ensure that we have explored their parameter space equally, we will make their weights equal.
+The next three operators are all labelled `ScaleOperator`, and when fired, scale the values of our `death`, `sampling` and `birth` rates respectively. As before, you can see a `weight` specified, defining how often these operators fire relative to each other. As all three of these rates are important to us, and we want to ensure that we have explored their parameter space equally, we will make their weights equal.
 	
 >Change the `weight` of the `deathRateScaler`, `samplingScaler`, and `birthRateScaler` to 10.0.
 		
@@ -523,9 +609,9 @@ Beneath the `ScaleOperators` you can see one more operator, an `UpDownOperator`.
 >    </operator>
 >```
 		
-And finally we reach the last block of the XML, which determines the **logs** outputted by our BEAST2 analysis. We can see a `tracelog`, which records our parameters to a log file, a `screenlog`, which provides settings on what is printed to the screen during the analysis, and a `treelog`, which records the trees sampled during our analysis. Our `treelog` would simply save identical versions of our input tree, so to save on file space we will remove it. We will also remove the `OperatorSchedule` - this can be useful for fine-tuning operators but we do not need it here.
+Once again, the last block of the XML determines the **logs** outputted by the analysis. We will remove the `treelog` and `operatorschedule` to save file space.
 		
->Remove the `treelog` and `OperatorSchedule`:
+>Remove the `treelog` and `operatorschedule`:
 >
 >```xml
 >   <logger id="treelog.t:empty" spec="Logger" fileName="$(tree).trees" logEvery="1000" mode="tree">
@@ -534,15 +620,15 @@ And finally we reach the last block of the XML, which determines the **logs** ou
 >   <operatorschedule id="OperatorSchedule" spec="OperatorSchedule"/>
 >```
 		
-We also need to remove parameters from the `tracelog` and `screenlog` that no longer exist in our XML.
+We also need to remove parameters from the `tracelog` and `screenlog` that no longer exist in our XML, and log the `origin`.
 		
 >Remove the `treeLikelihood` and `TreeHeight` parameters from the `tracelog`, and add `<log idref="origin.t:empty"/>`. 
 		
-With that, our XML is ready!
+Our XML is finally ready!
 
 >**Save** all changes to your XML file and close it.
 
-We can now run the analysis in BEAST2. It's important to have `Lloyd.tree` saved somewhere that BEAST2 can access it.
+We can now run the analysis in BEAST2. As with the exponential coalescent model, it's important to have `Lloyd.tree` saved somewhere that BEAST2 can access it.
 
 >Download and save `Lloyd.tree` in the same folder as your BEAST2 program. Open the program and select `dinosaur_BDSKY.xml` (or `dinosaur_BDSKY_final.xml` if you're using our ready-made version). If you have **BEAGLE** installed tick the box to **Use BEAGLE library if available**, which will make the run faster. Hit **Run** to start the analysis.
 >
