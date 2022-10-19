@@ -287,7 +287,11 @@ The next operator is a `ScaleOperator` which, when fired, **scales** the value o
 > <operator id="GrowthRateRandomWalk4.t:empty" spec="RealRandomWalkOperator" parameter="@growthRate4" weight="3.0" windowSize="1.0"/>
 >```
 
-Towards the end of each operator, you can see a `weight` specified. This defines how often these operators fire relative to each other. All of the weights have a value of 3.0, meaning that they are equally likely to fire. This is a reasonable set-up for our analysis so we will leave these values as they are.
+One of the parameters in the `RealRandomWalkOperator` is the `windowSize`, which describes the permitted amplitude of parameter change. We will set this to 0.05 for each of our four rates.
+	
+>Change the `windowSize` of each of the `growthRate` operators to **0.05**.
+
+You can also see that each of our operators has a `weight` specified. This defines how often these operators fire relative to each other. All five of the weights have a value of 3.0, meaning that they are equally likely to fire. This is a reasonable set-up for our analysis so we will leave these values as they are.
 
 And finally we reach the last block of the XML, which determines the **logs** outputted by our BEAST2 analysis. We can see a `tracelog`, which records our parameters to a log file, a `screenlog`, which provides settings on what is printed to the screen during the analysis, and a `treelog`, which records the trees sampled during our analysis. Our `treelog` would simply save identical versions of our input tree, so to save on file space we will remove it. We will also remove the `OperatorSchedule` - this can be useful for fine-tuning operators but we do not need it here.
 
