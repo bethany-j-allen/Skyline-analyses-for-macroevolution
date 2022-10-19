@@ -51,9 +51,11 @@ The aim of this tutorial is to:
 If this tutorial has been useful to you, please consider citing {% cite Allen2023 --file Tutorial-Template/master-refs.bib %}, from which these analyses are taken.
 
 ## The data
+
 We will be inferring our skyline parameters using a ready-made phylogeny containing 420 dinosaur species, published by {% cite Lloyd2008 --file Tutorial-Template/master-refs.bib %}. This phylogeny is a 'supertree', created using an informal method to collate several smaller dinosaur phylogenies into a larger one. Supertrees are typically cladograms, and must be timescaled using fossil data to estimate their branch lengths. The branch lengths we use here were inferred by {% cite Sakamoto2016 --file Tutorial-Template/master-refs.bib %}: they used fossil occurrences from the [Paleobiology Database](http://paleobiodb.org) to infer the midpoint of the temporal range of each tip, and timescaled the phylogeny using the "equal" method, which distributes time evenly between the available branches.
 
 ## Install BEAST2 packages
+
 The coalescent-based skyline model is included in the core of BEAST2, but we need to install the **BDSKY** package, which contains the birth-death skyline model. We will also need the **feast** package, which will allow us to integrate some more complex features into our analyses. Installation of packages is done using the package manager, which is integrated into BEAUti.
 
 >Open the **BEAST2 Package Manager** by navigating to **File > Manage Packages**.
@@ -65,11 +67,13 @@ After the installation of a package, the program is on your computer, but BEAUti
 >Close the **BEAST2 Package Manager** and **_restart_** BEAUti to fully load the **BDSKY** and **feast** packages.
 
 ## Setting up the Exponential Coalescent Skyline analysis
+
 We will start with the simpler of the two models, the **exponential coalescent**. This model is similar in construction to the **constant coalescent** model applied in the **Skyline plots** tutorial, but instead of assuming that the size of the population remains constant during our individual time intervals, we instead assume that they are experiencing **exponential growth or decline**. The advantage of using this model is that while the constant coalescent estimates **constant effective population sizes** within each time interval, the exponential coalescent instead estimates **diversification rates** for each of the time intervals, which is what we would like to infer for our dinosaurs.
 
 Many of the features we will need in our XML files are not currently implemented in BEAUti. However, for both models, we will start our analyses by creating XML files in BEAUti which will then serve as a template for us to alter by hand ("hack") later. 
 
 ### Creating the Analysis Files with BEAUti
+
 The first step in setting up an analysis in BEAUti is to upload an alignment. In our case, we do not have an alignment as we are using a ready-made phylogeny instead, but we will still need to upload an alignment in order to initialise our XML. We have provided a dummy `.nexus` file for this purpose, which we will replace later with code that reads in our phylogeny.
 
 >In the **Partitions** panel, import the nexus file with the empty alignment by navigating to **File > Import Alignment** in the menu and then finding the `empty.nexus` file on your computer, *or* drag and drop the file into the **BEAUti** window.
@@ -101,6 +105,7 @@ We can leave the rest of the tabs as they are and save the XML file. We want to 
 >Leave all other settings at their default values and save the file as `dinosaur_coalescent.xml`.
 
 ### Amending the Analysis Files
+
 We can now start "hacking" our XML template to ensure that it includes our desired features, including some that are not available in BEAUti.
 
 >Open `dinosaur_coal.xml` in your preferred text editor.
@@ -323,9 +328,11 @@ We can now run the analysis in BEAST2. It's important to have `Lloyd.tree` saved
 The analysis should take about XX minutes to run. In the meantime, you can start setting up the fossilised-birth-death XML.
 
 ## Setting up the Fossilised-Birth-Death Skyline analysis
+
 As with the exponential coalscent model, many of the features we will need in our XML file are not yet implemented in BEAUti, but we will start our analyses by creating XML files in BEAUti.
 
 ### Creating the Analysis Files with BEAUti
+
 As before, we need to start by uploading our dummy `.nexus` file as an alignment.
 
 >In the **Partitions** panel, import the nexus file with the empty alignment by navigating to **File > Import Alignment** in the menu and then finding the `empty.nexus` file on your computer, *or* drag and drop the file into the **BEAUti** window.
@@ -357,6 +364,7 @@ We can leave the rest of the tabs as they are and save the XML file. We will aga
 >Leave all other settings at their default values and save the file as `dinosaur_BDSKY.xml`.
 
 ### Amending the Analysis Files
+
 It is now time to "hack" our XML template, to remove the content we don't need and add some additional features. The first few steps are the same as for our exponential coalescent XML.
 
 >Open `dinosaur_BDSKY.xml` in your preferred text editor.
@@ -643,6 +651,7 @@ We can now run the analysis in BEAST2. As with the exponential coalescent model,
 The analysis should take about XX minutes to run.
 
 ##Visualising the results
+
 Once the BEAST2 analyses have finished running, we will use **R** to plot our skylines. The log files are relatively easy to handle in R, so we have provided custom code for this rather than using an R package, although this code does require the **tidyverse** to be installed (specifically, we will use **dplyr** and **ggplot2**).
 
 The first step is to install the `tidyverse` if you haven't previously, and then to load the package.
@@ -654,6 +663,7 @@ library(tidyverse)
 ```
 
 ###The Exponential Coalescent model results
+
 First we will take a look at our **exponential coalescent** skyline. The log file from this analysis needs to be read into R, either with or without setting the working directory (the location where R will look for your files). We will also immediately trim the log to remove the first 10% of iterations as burn-in.
 
 ```R
@@ -747,6 +757,7 @@ print(pop_data)
 ```
 
 ###The Fossilised-Birth-Death model results
+
 We can now examine the results of our **fossilised-birth-death** model. Again, we need to read in the relevant log file and trim off the first 10% as burn-in.
 
 ```R
@@ -937,6 +948,7 @@ print(origin_data)
 ```
 
 ###Model comparison
+
 If we compare the skylines generated using our exponential coalescent and fossilised-birth-death models, we can see that they do not reconstruct the same diversification trajectory for dinosaurs across their evolutionary history. The exponential coalescent model indicates that the dinosaurs were experiencing negative diversification (net loss of species) during the Late Cretaceous, even prior to their total extinction at the Cretaceous-Paleogene boundary. In contrast, the fossilised-birth-death model suggests that the dinosaurs may have been in decline in the Early Cretaceous, but had returned to net diversification by the Late Cretaceous. One possible reason for this is that the fossilised-birth-death model includes fossil sampling rate as a parameter, whereas the exponential coalescent model simply assumes that there is no relationship between the sampling process and species richness, which may not be the case. Understanding the assumptions of the models we apply, and how well these assumptions fit our data, is therefore essential in Bayesian phylodynamics.
 
 ----
