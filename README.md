@@ -9,7 +9,7 @@ beastversion: 2.6.6
 
 # Background
 
-Bayesian phylodynamics uses the shape of a phylogenetic tree to infer characteristics of the population described by the phylogeny. Although widely applied to epidemiological datasets, the approach is yet to be used widely in macroevolution. In this case, skyline methods can be used to estimate parameters such as speciation, extinction and sampling rates over time, as well as the total number of lineages (usually species diversity). In this tutorial, we demonstrate how to apply the exponential coalescent and fossilised-birth-death skyline models, which both estimate piecewise-constant evolutionary rates through time, to a dinosaur supertree. The models differ in the temporal direction in which they are applied, and the assumptions they make about how the phylogeny is sampled. We recommend reading the **Skyline plots** tutorial before attempting this one, as it covers a lot of the theory behind the models which we will not repeat here, except to highlight points which are relevant to macroevolutionary datasets.
+Bayesian phylodynamics uses the shape of a phylogenetic tree to infer characteristics of the population represented in the phylogeny. Although widely applied to epidemiological datasets, the approach is yet to be used widely in macroevolution. In this case, skyline methods can be used to estimate parameters such as speciation, extinction and sampling rates over time, as well as the total number of lineages (usually species diversity). In this tutorial, we demonstrate how to apply the exponential coalescent and fossilised-birth-death skyline models, which both estimate piecewise-constant evolutionary rates through time, to a dinosaur supertree. The models differ in the temporal direction in which they are applied, and the assumptions they make about how the phylogeny is sampled. We recommend reading the **Skyline plots** tutorial before attempting this one, as it covers a lot of the theory behind the models which we will not repeat here, except to highlight points which are relevant to macroevolutionary datasets.
 
 ----
 
@@ -41,7 +41,7 @@ We will be using R to analyze the output of the Birth-Death Skyline plot. RStudi
 
 # Practical: Skyline analyses for macroevolution
 
-In this tutorial we will estimate diversification rates for dinosaurs using a previously published supertree.
+In this tutorial we will estimate diversification rates for dinosaurs using a previously published supertree. The evolutionary history of dinosaurs is somewhat controversial; although non-avian dinosaurs are well agreed to have become extinct as a result of an asteroid impact at the Cretaceous-Paleogene boundary, it has been fiercely debated whether the clade was already in decline prior to this event (e.g. {% cite Brusatte2015 --file Tutorial-Template/master-refs.bib %}, {% cite Benson2018 --file Tutorial-Template/master-refs.bib %}).
 
 The aim of this tutorial is to:
 - Learn how to set up a skyline analysis using a previously made phylogeny;
