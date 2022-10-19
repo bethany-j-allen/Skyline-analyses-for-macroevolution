@@ -203,7 +203,7 @@ As well as defining models for three time intervals here, you can also see an ob
 >           <populationModel spec="ExponentialGrowth" popSize="1.0" growthRate="@growthRate2"/>
 >           <populationModel spec="ExponentialGrowth" popSize="1.0" growthRate="@growthRate3"/>
 >           <populationModel spec="ExponentialGrowth" popSize="1.0" growthRate="@growthRate4"/>
->           <changeTimes spec="RealParameter" value="32.55 77.05 133.35"/>
+>           <changeTimes spec="parameter.RealParameter" value="32.55 77.05 133.35"/>
 > </populationModel>
 >```
 	
@@ -220,11 +220,11 @@ The model block should now look like this:
 ```xml
 <distribution id="likelihood" spec="Coalescent">
 	<populationModel spec="feast.popmodels.CompoundPopulationModel" makeContinuous="true">
-           <populationModel spec="ExponentialGrowth" popSize="@ePopSize" growthRate="@growthRate1"/>
+           <populationModel spec="ExponentialGrowth" popSize="@ePopSize.t:empty" growthRate="@growthRate1"/>
            <populationModel spec="ExponentialGrowth" popSize="1.0" growthRate="@growthRate2"/>
            <populationModel spec="ExponentialGrowth" popSize="1.0" growthRate="@growthRate3"/>
            <populationModel spec="ExponentialGrowth" popSize="1.0" growthRate="@growthRate4"/>
-           <changeTimes <changeTimes spec="parameter.RealParameter" value="32.55 77.05 133.35"/>
+           <changeTimes spec="parameter.RealParameter" value="32.55 77.05 133.35"/>
 	</populationModel>
         <treeIntervals id="TreeIntervals.t:empty" spec="TreeIntervals" tree="@tree"/>
 </distribution>
