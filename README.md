@@ -642,6 +642,10 @@ We can now run the analysis in BEAST2. As with the exponential coalescent model,
 
 The analysis should take about XX minutes to run.
 
+##Visualising the results
+
+Once the BEAST2 analyses have finished running, we will use **R** to plot our skylines. The log files are relatively easy to handle in R, so we have provided custom code for this rather than using an R package, although this code does require the **tidyverse** to be installed (specifically, we will use **dplyr** and **ggplot2**).
+
 
 
 
