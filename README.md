@@ -314,7 +314,7 @@ We can now run the analysis in BEAST2. It's important to have `Lloyd.tree` saved
 >
 >**OR**
 >
->Download and save `Lloyd.tree` in a folder of your choosing, preferably the one also containing your XML file. Find the BEAST2 executable in **BEAST_2.X.X** (depending on your version) **> bin**. Right-click on the **beast** executable and select **Create shortcut** on Windows or **Make alias** on Mac. Cut and paste the created shortcut/alias into the folder containing your analysis files. If you open your **terminal** and navigate to the folder containing your files, you should now be able to run the analysis through the terminal using `beast dinosaur_coal.xml` (or `beast dinosaur_coal_final.xml` if you're using our ready-made version).
+>Download and save `Lloyd.tree` in the folder containing your XML file. Find the BEAST2 executable in **BEAST_2.X.X** (depending on your version) **> bin**. Right-click on the **beast** executable and select **Create shortcut** on Windows or **Make alias** on Mac. Cut and paste the created shortcut/alias into the folder containing your analysis files. If you open your **terminal** and navigate to the folder containing your files, you should now be able to run the analysis through the terminal using `beast dinosaur_coal.xml` (or `beast dinosaur_coal_final.xml` if you're using our ready-made version).
 
 The analysis should take about XX minutes to run. In the meantime, you can start setting up the fossilised-birth-death XML.
 
@@ -628,13 +628,13 @@ Our XML is finally ready!
 
 >**Save** all changes to your XML file and close it.
 
-We can now run the analysis in BEAST2. As with the exponential coalescent model, it's important to have `Lloyd.tree` saved somewhere that BEAST2 can access it.
+We can now run the analysis in BEAST2. As with the exponential coalescent model, it's important to have `Lloyd.tree` saved somewhere that BEAST2 can access it (check back to the instructions for the running the **exponential coalescent** XML if you skipped this).
 
->Download and save `Lloyd.tree` in the same folder as your BEAST2 program. Open the program and select `dinosaur_BDSKY.xml` (or `dinosaur_BDSKY_final.xml` if you're using our ready-made version). If you have **BEAGLE** installed tick the box to **Use BEAGLE library if available**, which will make the run faster. Hit **Run** to start the analysis.
+>Open the program and select `dinosaur_BDSKY.xml` (or `dinosaur_BDSKY_final.xml` if you're using our ready-made version). If you have **BEAGLE** installed tick the box to **Use BEAGLE library if available**, which will make the run faster. Hit **Run** to start the analysis.
 >
 >**OR**
 >
->Download and save `Lloyd.tree` in a folder of your choosing, preferably the one also containing your XML file. Find the BEAST2 executable in **BEAST_2.X.X** (depending on your version) **> bin**. Right-click on the **beast** executable and select **Create shortcut** on Windows or **Make alias** on Mac. Cut and paste the created shortcut/alias into the folder containing your analysis files. If you open your **terminal** and navigate to the folder containing your files, you should now be able to run the analysis through the terminal using `beast dinosaur_BDSKY.xml` (or `beast dinosaur_BDSKY_final.xml` if you're using our ready-made version).
+>Ensure your XML file and `Lloyd.tree` are saved in the same folder, which also contains the BEAST2 shortcut/alias you created earlier. Open your **terminal** and navigate to the folder containing your files, then run the analysis through the terminal using `beast dinosaur_BDSKY.xml` (or `beast dinosaur_BDSKY_final.xml` if you're using our ready-made version).
 
 The analysis should take about XX minutes to run.
 
