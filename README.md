@@ -323,7 +323,7 @@ We can now run the analysis in BEAST2. It's important to have `Lloyd.tree` saved
 >
 >Download and save `Lloyd.tree` in the folder containing your XML file. Find the BEAST2 executable in **BEAST_2.X.X** (depending on your version) **> bin**. Right-click on the **beast** executable and select **Create shortcut** on Windows or **Make alias** on Mac. Cut and paste the created shortcut/alias into the folder containing your analysis files. If you open your **terminal** and navigate to the folder containing your files, you should now be able to run the analysis through the terminal using `beast dinosaur_coal.xml` (or `beast dinosaur_coal_final.xml` if you're using our ready-made version).
 
-The analysis should take about XX minutes to run. In the meantime, you can start setting up the fossilised-birth-death XML.
+The analysis should take about 15 minutes to run. In the meantime, you can start setting up the fossilised-birth-death XML.
 
 ## Setting up the Fossilised-Birth-Death Skyline analysis
 
@@ -355,7 +355,7 @@ We can leave the rest of the tabs as they are and save the XML file. We will aga
 
 >Navigate to the **MCMC** panel.
 >
->Change the **Chain Length** from 10’000’000 to 1’000’000.
+>Change the **Chain Length** from 10’000’000 to 5’000’000.
 >
 >Click on the arrow next to **tracelog** and change the **File Name** to `$(filebase).log` and set the Log Every to 1’000.
 >
@@ -646,7 +646,7 @@ We can now run the analysis in BEAST2. As with the exponential coalescent model,
 >
 >Ensure your XML file and `Lloyd.tree` are saved in the same folder, which also contains the BEAST2 shortcut/alias you created earlier. Open your **terminal** and navigate to the folder containing your files, then run the analysis through the terminal using `beast dinosaur_BDSKY.xml` (or `beast dinosaur_BDSKY_final.xml` if you're using our ready-made version).
 
-The analysis should take about XX minutes to run.
+The analysis should take about 15 minutes to run.
 
 ##Visualising the results
 
