@@ -54,11 +54,11 @@ We will be inferring our skyline parameters using a ready-made phylogeny contain
 
 ## Install BEAST2 packages
 
-The coalescent-based skyline model is included in the core of BEAST2, but we need to install the **BDSKY** package, which contains the birth-death skyline model. We will also need the **feast** package, which will allow us to integrate some more complex features into our analyses. Installation of packages is done using the package manager ([Figure 1](#fig:1)), which is integrated into BEAUti.
+The coalescent-based skyline model is included in the core of BEAST2, but we need to install the **BDSKY** package, which contains the birth-death skyline model. We will also need the **feast** package, which will allow us to integrate some more complex features into our analyses. Installation of packages is done using the package manager, which is integrated into BEAUti.
 
 <figure>
 	<a id="fig:1"></a>
-	<img style="width:25%;" src="figures/BEAUti packages.png" alt="">
+	<img style="width:75%;" src="figures/BEAUti packages.png" alt="">
 	<figcaption>Figure 1: The package manager window in BEAUti.</figcaption>
 </figure>
 
@@ -82,11 +82,21 @@ The first step in setting up an analysis in BEAUti is to upload an alignment. In
 
 >In the **Partitions** panel, import the nexus file with the empty alignment by navigating to **File > Import Alignment** in the menu and then finding the `empty.nexus` file on your computer, *or* drag and drop the file into the **BEAUti** window.
 
-The empty alignment should appear in the **Partitions** tab, named `empty` and containing a single nucleotide site for a single taxon.
+<figure>
+	<a id="fig:2"></a>
+	<img style="width:75%;" src="figures/Empty alignment.png" alt="">
+	<figcaption>Figure 2: The partitions tab containing the empty alignment.</figcaption>
+</figure>
 
 Most of the default tabs in BEAUti relate to inferring the phylogeny, which we will not be doing, so we can skip straight to the **Priors** tab. It's worth remembering that a lot of the default parameters in BEAUti are set up for analyses very different to ours, so it's worth checking these thoroughly.
 
 >Select the **Priors** tab and choose **Coalescent Exponential Population** as the tree prior.
+
+<figure>
+	<a id="fig:3"></a>
+	<img style="width:75%;" src="figures/Coalescent priors tab.png" alt="">
+	<figcaption>Figure 3: The priors tab with a Coalescent Exponential Population tree prior.</figcaption>
+</figure>
 
 Here we see that the model has two parameters, `ePopSize` and `growthRate`. `ePopSize` refers to the **effective population size** at the start of the coalescent process. Because coalescent models consider time from the present backwards (see **Skyline plots** tutorial), this therefore refers to the size of the population at the end of our youngest time interval. The tips in our phylogeny are species, and so in this context, our effective population size can be considered to be analogous to **total species richness**. Our `growthRate` is simply our **diversification rate**.
 
@@ -95,6 +105,12 @@ We actually only need the population size prior, and will remove the growth rate
 >Click on the **initial =** button for `ePopSize` and change the **initialisation value** to 1.0.
 >
 >Click on the **initial =** button for `growthRate` and change the **initialisation value** to 0.0.
+
+<figure>
+	<a id="fig:4"></a>
+	<img style="width:50%;" src="figures/Coalescent initialisation.png" alt="">
+	<figcaption>Figure 4: The initialisation window.</figcaption>
+</figure>
 
 We will go into much more detail on the contents of this tab later, when setting up our birth-death model.
 
@@ -344,6 +360,12 @@ As before, we need to start by uploading our dummy `.nexus` file as an alignment
 Once again, we will skip straight to the **Priors** tab.
 
 >Select the **Priors** tab and choose **Birth Death Skyline BDSParam** as the tree prior.
+	
+<figure>
+	<a id="fig:5"></a>
+	<img style="width:75%;" src="figures/FBD priors tab.png" alt="">
+	<figcaption>Figure 5: The priors tab with a Birth Death Skyline tree prior.</figcaption>
+</figure>
 
 The "standard" `contemporary` birth death skyline is parameterised using a reproductive number, a "become uninfectious" rate and a sampling proportion. However, here we are using the `BDSParam` model, which refers to parameterisation using a birth rate (here, speciation), a death rate (here, extinction) and an extant sampling proportion. As our phylogeny is of non-avian dinosaurs, for which we only have fossils and no extant (genetic) samples, we will later exchange the extant sampling proportion, usually denoted using {% eqinline rho %}, for a fossil sampling rate, usually denoted using {% eqinline psi %}.
 
@@ -356,6 +378,12 @@ This is also the point where we express how many sections (here called **dimensi
 >Change the **birth rate** prior from a uniform distribution to an exponential. Using the drop-down arrow on the left, check that the **mean** is set to 1.0. Click on the **initial =** button and change the **initialisation value** to 1.0. Check that the lower value is 0.0 and the upper value is `Infinity`. Change the **Dimension** to 4. Repeat these four steps for the **death rate** prior.
 >
 >Change the **rho** (sampling) prior from a uniform distribution to an exponential. Using the drop-down arrow on the left, change the **mean** value to 0.2. Click on the **initial =** button and change the **initialisation value** to 0.5. Check that the lower value is 0.0, and change the upper value to `Infinity`. Change the **Dimension** to 4.
+	
+<figure>
+	<a id="fig:6"></a>
+	<img style="width:50%;" src="figures/FBD initialisation.png" alt="">
+	<figcaption>Figure 6: The initialisation tab.</figcaption>
+</figure>
 
 We can leave the rest of the tabs as they are and save the XML file. We will again shorten the chain length and decrease the sampling frequency of our analysis, so the analysis completes in a reasonable time and the output files stay small.
 
@@ -724,6 +752,12 @@ ggplot(data = coalescent_summary, aes(x = interval, y = median, ymin = lowCI,
   labs(x = "Interval", y = "Diversification rate") +
   theme_classic(base_size = 17)
  ```
+		
+<figure>
+	<a id="fig:7"></a>
+	<img style="width:50%;" src="figures/Coalescent_errors.png" alt="">
+	<figcaption>Figure 7: The exponential coalescent diversification skyline plotted using error bars.</figcaption>
+</figure>
  
 Alternatively, we can plot the skylines as continuous by extending our estimates across the temporal duration of each time interval, in a **piecewise constant** skyline.
 
@@ -746,8 +780,14 @@ ggplot(to_plot) +
   xlab("Age (Ma)") + ylab("Diversification rate") +
   theme_classic(base_size = 17)
  ```
+		
+<figure>
+	<a id="fig:8"></a>
+	<img style="width:50%;" src="figures/Coalescent_ribbon.png" alt="">
+	<figcaption>Figure 8: The exponential coalescent diversification skyline plotted using a ribbon plot.</figcaption>
+</figure>
  
-We can also investigate the other parameter estimated in the model, the estimated **effective population size** at the start of the coalescent process (which is the youngest end of the time interval). For us, this corresponds to an estimate of the **total species diversity** of non-avian dinosaurs at the Cretaceous-Paleogene boundary. Again, we can estimate the median and 95% HPD values for our diversity estimates.
+We can also investigate the other parameter estimated in the model, the estimated **effective population size** at the start of the coalescent process (which is the youngest end of the time interval). For us, this corresponds to an estimate of the **total species diversity** of non-avian dinosaurs just before the Cretaceous-Paleogene boundary. Again, we can estimate the median and 95% HPD values for our diversity estimates.
 
 ```R
 #Extract estimated diversity
@@ -759,6 +799,14 @@ pop_data <- as.data.frame(rbind(c(median(pop_data), quantile(pop_data, 0.025),
 colnames(pop_data) <- c("median", "lowCI", "highCI")
 print(pop_data)
 ```
+		      
+<figure>
+	<a id="fig:9"></a>
+	<img style="width:10%;" src="figures/Coalescent pop table.png" alt="">
+	<figcaption>Figure 9: The estimated number of dinosaur species alive just before the Cretaceous-Paleogene boundary.</figcaption>
+</figure>
+	
+Our coalescent model therefore suggests that between 380 and 950 dinosaur species became extinct during the end-Cretaceous mass extinction.
 
 ###The Fossilised-Birth-Death model results
 
@@ -894,6 +942,12 @@ ggplot(data = samp_data, aes(x = interval, y = median, ymin = lowCI,
   labs(x = "Interval", y = "Sampling rate") +
   theme_classic(base_size = 17)
 ```
+	
+<figure>
+	<a id="fig:10"></a>
+	<img style="width:50%;" src="figures/FBD errors.png" alt="">
+	<figcaption>Figure 10: The fossilsed-birth-death diversification skyline plotted using error bars.</figcaption>
+</figure>
 
 ...but also as **piecewise constant** skylines using ribbon plots.
 
@@ -936,8 +990,14 @@ ggplot(samp_plot) +
   xlab("Age (Ma)") + ylab("Sampling rate") +
   theme_classic(base_size = 17)
 ```
+		  
+<figure>
+	<a id="fig:11"></a>
+	<img style="width:50%;" src="figures/FBD ribbon.png" alt="">
+	<figcaption>Figure 11: The fossilsed-birth-death diversification skyline plotted using a ribbon plot.</figcaption>
+</figure>
 
-We can also examine the last parameter in our fossilised-birth-death model, which is the **origin** of our clade, dinosaurs.
+We can also examine the last parameter in our fossilised-birth-death model, which is the **origin** of our clade, dinosaurs. Note that we add 66 to our estimates to account for the difference between the youngest tip (at the Cretaceous-Paleogene boundary) and the present day.
 
 ```R
 #Extract origin data
@@ -950,6 +1010,14 @@ origin_data <- as.data.frame(rbind(c((median(origin_data) + 66),
 colnames(origin_data) <- c("median", "lowCI", "highCI")
 print(origin_data)
 ```
+			 
+<figure>
+	<a id="fig:12"></a>
+	<img style="width:10%;" src="figures/FBD pop table.png" alt="">
+	<figcaption>Figure 12: The estimated duration of the non-avian dinosaurs.</figcaption>
+</figure>
+	
+Our fossilised-birth-death model therefore suggests that dinosaurs originated around 246Ma, which would be during the Middle Triassic. 
 
 ###Model comparison
 
