@@ -802,7 +802,7 @@ print(pop_data)
 		      
 <figure>
 	<a id="fig:9"></a>
-	<img style="width:10%;" src="figures/Coalescent pop table.png" alt="">
+	<img style="width:25%;" src="figures/Coalescent pop table.png" alt="">
 	<figcaption>Figure 9: The estimated number of dinosaur species alive just before the Cretaceous-Paleogene boundary.</figcaption>
 </figure>
 	
@@ -1013,7 +1013,7 @@ print(origin_data)
 			 
 <figure>
 	<a id="fig:12"></a>
-	<img style="width:10%;" src="figures/FBD origin table.png" alt="">
+	<img style="width:25%;" src="figures/FBD origin table.png" alt="">
 	<figcaption>Figure 12: The estimated duration of the non-avian dinosaurs.</figcaption>
 </figure>
 	
