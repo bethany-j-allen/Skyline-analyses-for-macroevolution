@@ -1013,7 +1013,7 @@ print(origin_data)
 			 
 <figure>
 	<a id="fig:12"></a>
-	<img style="width:10%;" src="figures/FBD pop table.png" alt="">
+	<img style="width:10%;" src="figures/FBD origin table.png" alt="">
 	<figcaption>Figure 12: The estimated duration of the non-avian dinosaurs.</figcaption>
 </figure>
 	
