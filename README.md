@@ -54,7 +54,13 @@ We will be inferring our skyline parameters using a ready-made phylogeny contain
 
 ## Install BEAST2 packages
 
-The coalescent-based skyline model is included in the core of BEAST2, but we need to install the **BDSKY** package, which contains the birth-death skyline model. We will also need the **feast** package, which will allow us to integrate some more complex features into our analyses. Installation of packages is done using the package manager, which is integrated into BEAUti.
+The coalescent-based skyline model is included in the core of BEAST2, but we need to install the **BDSKY** package, which contains the birth-death skyline model. We will also need the **feast** package, which will allow us to integrate some more complex features into our analyses. Installation of packages is done using the package manager ([Figure 1](#fig:1)), which is integrated into BEAUti.
+
+<figure>
+	<a id="fig:1"></a>
+	<img style="width:25%;" src="figures/BEAUti packages.png" alt="">
+	<figcaption>Figure 1: The package manager window in BEAUti.</figcaption>
+</figure>
 
 >Open the **BEAST2 Package Manager** by navigating to **File > Manage Packages**.
 >
