@@ -28,7 +28,7 @@ Both BEAST2 and BEAUti2 are Java programs, which means that the exact same code 
 
 ### Any programmer-friendly text editor
 
-We will need to edit the XML files produced by BEAUti, for which we'll need a text editor. It's best to use one designed for programmers as these include nice features such as colouring code, which makes it more reader-friendly.
+We will need to edit the XML files produced by BEAUti, for which we'll need a text editor. It's best to use one designed for programmers, as these include nice features such as syntax highlighting, which makes reading code more reader-friendly. [Sublime Text](https://www.sublimetext.com) is a good option and is available for MacOS, Windows and Linux.
 
 ### Tracer
 
