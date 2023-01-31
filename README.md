@@ -4,6 +4,7 @@ level: Intermediate
 title: Skyline analyses for macroevolution
 subtitle: Estimating evolutionary parameters from species phylogenies
 beastversion: 2.6.6
+tracerversion: 1.7.x
 ---
 
 
@@ -17,7 +18,7 @@ Bayesian phylodynamics uses the shape of a phylogenetic tree to infer characteri
 
 ### BEAST2 - Bayesian Evolutionary Analysis Sampling Trees 2
 
-[BEAST2](http://www.beast2.org) is a free software package for Bayesian evolutionary analysis of molecular sequences using MCMC and strictly oriented toward inference using rooted, time-measured phylogenetic trees {% cite Bouckaert2014 --file Tutorial-Template/master-refs.bib %}. This tutorial uses the BEAST2 version 2.6.6.
+[BEAST2](http://www.beast2.org) is a free software package for Bayesian evolutionary analysis of molecular sequences using MCMC and strictly oriented toward inference using rooted, time-measured phylogenetic trees {% cite Bouckaert2014 --file Skyline-analyses-for-macroevolution/master-refs.bib %}. This tutorial uses the BEAST v{{ page.beastversion }}.
 
 ### BEAUti - Bayesian Evolutionary Analysis Utility
 
@@ -31,7 +32,7 @@ We will need to edit the XML files produced by BEAUti, for which we'll need a te
 
 ### Tracer
 
-[Tracer](http://beast.community/tracer) is used to summarise the posterior estimates of the various parameters sampled by the Markov Chain. This program can be used for visual inspection and to assess convergence. It helps to quickly view median estimates and 95% highest posterior density intervals of the parameters, and calculates the effective sample sizes (ESS) of parameters. It can also be used to investigate potential parameter correlations. We will be using Tracer v1.7.x.
+[Tracer](http://beast.community/tracer) is used to summarise the posterior estimates of the various parameters sampled by the Markov Chain. This program can be used for visual inspection and to assess convergence. It helps to quickly view median estimates and 95% highest posterior density intervals of the parameters, and calculates the effective sample sizes (ESS) of parameters. It can also be used to investigate potential parameter correlations. We will be using Tracer v{{ page.tracerversion }}.
 
 ### R / RStudio
 
@@ -41,7 +42,7 @@ We will be using R to analyze the output of the Birth-Death Skyline plot. RStudi
 
 # Practical: Skyline analyses for macroevolution
 
-In this tutorial we will estimate diversification rates for dinosaurs using a previously published supertree. The evolutionary history of dinosaurs is somewhat controversial; although non-avian dinosaurs are well agreed to have become extinct as a result of an asteroid impact at the Cretaceous-Paleogene boundary, it has been fiercely debated whether the clade was already in decline prior to this event (e.g. {% cite Brusatte2015 --file Tutorial-Template/master-refs.bib %}, {% cite Benson2018 --file Tutorial-Template/master-refs.bib %}).
+In this tutorial we will estimate diversification rates for dinosaurs using a previously published supertree. The evolutionary history of dinosaurs is somewhat controversial; although non-avian dinosaurs are well agreed to have become extinct as a result of an asteroid impact at the Cretaceous-Paleogene boundary, it has been fiercely debated whether the clade was already in decline prior to this event (e.g. {% cite Brusatte2015 --file Skyline-analyses-for-macroevolution/master-refs.bib %}, {% cite Benson2018 --file Skyline-analyses-for-macroevolution/master-refs.bib %}).
 
 The aim of this tutorial is to:
 - Learn how to set up a skyline analysis using a previously made phylogeny;
@@ -50,7 +51,7 @@ The aim of this tutorial is to:
 
 ## The data
 
-We will be inferring our skyline parameters using a ready-made phylogeny containing 420 dinosaur species, published by {% cite Lloyd2008 --file Tutorial-Template/master-refs.bib %}. This phylogeny is a 'supertree', created using an informal method to collate several smaller dinosaur phylogenies into a larger one. Supertrees are typically cladograms, and must be timescaled using fossil data to estimate their branch lengths. The branch lengths we use here were inferred by {% cite Sakamoto2016 --file Tutorial-Template/master-refs.bib %}: they used fossil occurrences from the [Paleobiology Database](http://paleobiodb.org) to infer the midpoint of the temporal range of each tip, and timescaled the phylogeny using the "equal" method, which distributes time evenly between the available branches.
+We will be inferring our skyline parameters using a ready-made phylogeny containing 420 dinosaur species, published by {% cite Lloyd2008 --file Skyline-analyses-for-macroevolution/master-refs.bib %}. This phylogeny is a 'supertree', created using an informal method to collate several smaller dinosaur phylogenies into a larger one. Supertrees are typically cladograms, and must be timescaled using fossil data to estimate their branch lengths. The branch lengths we use here were inferred by {% cite Sakamoto2016 --file Skyline-analyses-for-macroevolution/master-refs.bib %}: they used fossil occurrences from the [Paleobiology Database](http://paleobiodb.org) to infer the midpoint of the temporal range of each tip, and timescaled the phylogeny using the "equal" method, which distributes time evenly between the available branches.
 
 ## Install BEAST2 packages
 
@@ -369,7 +370,7 @@ Once again, we will skip straight to the **Priors** tab.
 
 The "standard" `contemporary` birth death skyline is parameterised using a reproductive number, a "become uninfectious" rate and a sampling proportion. However, here we are using the `BDSParam` model, which refers to parameterisation using a birth rate (here, speciation), a death rate (here, extinction) and an extant sampling proportion. As our phylogeny is of non-avian dinosaurs, for which we only have fossils and no extant (genetic) samples, we will later exchange the extant sampling proportion, usually denoted using {% eqinline rho %}, for a fossil sampling rate, usually denoted using {% eqinline psi %}.
 
-Choosing sensible priors for these parameters is not straightforward, so we will select priors which are relatively unrestrictive. For the birth and death rates, we will use **exponential** priors with a mean of 1.0; this places more probability on small rates, but still permits rates which are towards the higher end of those estimated from living animals and plants {% cite HenaoDiaz2019 --file Tutorial-Template/master-refs.bib %}. For the sampling rate, we will also choose an exponential prior, this time with a mean of 0.2.
+Choosing sensible priors for these parameters is not straightforward, so we will select priors which are relatively unrestrictive. For the birth and death rates, we will use **exponential** priors with a mean of 1.0; this places more probability on small rates, but still permits rates which are towards the higher end of those estimated from living animals and plants {% cite HenaoDiaz2019 --file Skyline-analyses-for-macroevolution/master-refs.bib %}. For the sampling rate, we will also choose an exponential prior, this time with a mean of 0.2.
 
 On the **initial =** buttons you will see two sets of square brackets. The first indicates what the starting value for that parameter will be; we need to alter our initialisation values to ensure that they sit within our prior distributions. The second contains two values which denote the limits of the range of values that our parameters are permitted to take, which are also important to consider carefully. Priors influence the probability of certain values being tested in your chain, but values which are improbable under your prior can still be selected if the signal in your data is strong enough. Setting this range provides hard limits to your parameter values regardless of your priors. Our parameters are all rates, expressed per branch per million years, so the full set of values they can take ranges between 0.0 and infinity.
 
@@ -496,7 +497,7 @@ Another option is to condition on ensuring that the model produces at least one 
 		
 >Change `conditionOnRoot="true"` to `conditionOnSurvival="true" conditionOnRhoSampling="false"`.
 		
-After this is the argument `contemp="true"`. This describes whether extant samples were collected in the present, i.e. at the age of the youngest tips. As we do not have extant samples, this is not relevant to our analysis, and can be removed. However, for our fossil sampling rate, we instead need to specify a different parameter, the `removalProbability`. When applying birth-death models to epidemiological datasets, sampling events are usually assumed to be associated with removal from the dataset: once a patient has been diagnosed with a pathogen, it is assumed that their pathogen is sampled and sequenced once (to enable inclusion in the phylogeny), and that they subsequently start receiving treatment, removing them from the population of diseased individuals. For our dataset, this would be equivalent to assuming that fossils are only deposited at the time of extinction. It would prevent multiple fossils existing for any single species, and mean than species for which fossils have been found could not be direct ancestors of other species in the phylogeny. While the relevance of these assumptions to supertrees is debatable, it is most logical to facilitate "sampled ancestors" in the case of fossil phylogenies (see {% cite Gavryushkina2014 --file Tutorial-Template/master-refs.bib %}), so we will set our `removalProbability` to 0.
+After this is the argument `contemp="true"`. This describes whether extant samples were collected in the present, i.e. at the age of the youngest tips. As we do not have extant samples, this is not relevant to our analysis, and can be removed. However, for our fossil sampling rate, we instead need to specify a different parameter, the `removalProbability`. When applying birth-death models to epidemiological datasets, sampling events are usually assumed to be associated with removal from the dataset: once a patient has been diagnosed with a pathogen, it is assumed that their pathogen is sampled and sequenced once (to enable inclusion in the phylogeny), and that they subsequently start receiving treatment, removing them from the population of diseased individuals. For our dataset, this would be equivalent to assuming that fossils are only deposited at the time of extinction. It would prevent multiple fossils existing for any single species, and mean than species for which fossils have been found could not be direct ancestors of other species in the phylogeny. While the relevance of these assumptions to supertrees is debatable, it is most logical to facilitate "sampled ancestors" in the case of fossil phylogenies (see {% cite Gavryushkina2014 --file Skyline-analyses-for-macroevolution/master-refs.bib %}), so we will set our `removalProbability` to 0.
 
 >Change `contemp="true"` to `removalProbability="0.0"`.
 
@@ -632,7 +633,7 @@ These operators are currently set to scale each of the **dimensions** in our rat
 > <operator id="BDSKY_contemp_bds_birthRateScalerAll.t:empty" spec="ScaleOperator" parameter="@birthRateBDS.t:empty" scaleAll="true" weight="10.0"/>
 >```
 		
-Beneath the `ScaleOperators` you can see one more operator, an `UpDownOperator`. It has `up` and `down` arguments, which are specified as our `birth` and `death` rates respectively. As currently defined, when this operator fires, it increases the birth rate and decreases the death rate. This operator can be very useful in cases where we expect two of our parameters to be correlated with one another, as speciation and extinction rates often are {% cite HenaoDiaz2019 --file Tutorial-Template/master-refs.bib %}. However, the current parameterisation places a negative directionality on this relationship, whereas we would actually expect higher speciation rates to be matched by higher extinction rates. Instead, we are going to raise our birth and death rates in concert, and instead decrease our sampling rate. We will also increase the weight of this operator to match that of our `scaleOperators`.
+Beneath the `ScaleOperators` you can see one more operator, an `UpDownOperator`. It has `up` and `down` arguments, which are specified as our `birth` and `death` rates respectively. As currently defined, when this operator fires, it increases the birth rate and decreases the death rate. This operator can be very useful in cases where we expect two of our parameters to be correlated with one another, as speciation and extinction rates often are {% cite HenaoDiaz2019 --file Skyline-analyses-for-macroevolution/master-refs.bib %}. However, the current parameterisation places a negative directionality on this relationship, whereas we would actually expect higher speciation rates to be matched by higher extinction rates. Instead, we are going to raise our birth and death rates in concert, and instead decrease our sampling rate. We will also increase the weight of this operator to match that of our `scaleOperators`.
 		
 >Change the `UpDownOperator` parameterisation from:
 >
@@ -682,7 +683,7 @@ We can now run the analysis in BEAST2. As with the exponential coalescent model,
 
 The analysis should take about 15 minutes to run.
 
-##Visualising the results
+## Visualising the results
 
 Once the BEAST2 analyses have finished running, we will use **R** to plot our skylines. The log files are relatively easy to handle in R, so we have provided custom code for this rather than using an R package, although this code does require the **tidyverse** to be installed (specifically, we will use **dplyr** and **ggplot2**).
 
@@ -694,7 +695,7 @@ install.packages("tidyverse")
 library(tidyverse)
 ```
 
-###The Exponential Coalescent model results
+### The Exponential Coalescent model results
 
 First we will take a look at our **exponential coalescent** skyline. The log file from this analysis needs to be read into R, either with or without setting the working directory (the location where R will look for your files). We will also immediately trim the log to remove the first 10% of iterations as burn-in.
 
@@ -808,7 +809,7 @@ print(pop_data)
 	
 Our coalescent model therefore suggests that between 380 and 950 dinosaur species became extinct during the end-Cretaceous mass extinction.
 
-###The Fossilised-Birth-Death model results
+### The Fossilised-Birth-Death model results
 
 We can now examine the results of our **fossilised-birth-death** model. Again, we need to read in the relevant log file and trim off the first 10% as burn-in.
 
@@ -1019,7 +1020,7 @@ print(origin_data)
 	
 Our fossilised-birth-death model therefore suggests that dinosaurs originated around 246Ma, which would be during the Middle Triassic. 
 
-###Model comparison
+### Model comparison
 
 If we compare the skylines generated using our exponential coalescent and fossilised-birth-death models, we can see that they do not reconstruct the same diversification trajectory for dinosaurs across their evolutionary history. The exponential coalescent model indicates that the dinosaurs were experiencing negative diversification (net loss of species) during the Late Cretaceous, even prior to their total extinction at the Cretaceous-Paleogene boundary. In contrast, the fossilised-birth-death model suggests that the dinosaurs may have been in decline in the Early Cretaceous, but had returned to net diversification by the Late Cretaceous. One possible reason for this is that the fossilised-birth-death model includes fossil sampling rate as a parameter, whereas the exponential coalescent model simply assumes that there is no relationship between the sampling process and species richness, which may not be the case. Understanding the assumptions of the models we apply, and how well these assumptions fit our data, is therefore essential in Bayesian phylodynamics.
 
@@ -1027,7 +1028,7 @@ If we compare the skylines generated using our exponential coalescent and fossil
 
 # Useful Links
 
-- [Bayesian Evolutionary Analysis with BEAST 2](http://www.beast2.org/book.html) {% cite BEAST2book2014 --file Tutorial-Template/master-refs.bib %}
+- [Bayesian Evolutionary Analysis with BEAST 2](http://www.beast2.org/book.html) {% cite BEAST2book2014 --file Skyline-analyses-for-macroevolution/master-refs.bib %}
 - BEAST 2 website and documentation: [http://www.beast2.org/](http://www.beast2.org/)
 - BEAST 1 website and documentation: [http://beast.bio.ed.ac.uk](http://beast.bio.ed.ac.uk)
 - Join the BEAST user discussion: [http://groups.google.com/group/beast-users](http://groups.google.com/group/beast-users) 
@@ -1036,10 +1037,10 @@ If we compare the skylines generated using our exponential coalescent and fossil
 
 # Relevant References
 
-{% bibliography --cited --file Tutorial-Template/master-refs.bib %}
+{% bibliography --cited --file Skyline-analyses-for-macroevolution/master-refs.bib %}
 
 ----
 
 # Citation
 
-If this tutorial has been useful to you, please consider citing {% cite Allen2023 --file Tutorial-Template/master-refs.bib %}, from which these analyses are taken.
+If this tutorial has been useful to you, please consider citing {% cite Allen2023 --file Skyline-analyses-for-macroevolution/master-refs.bib %}, from which these analyses are taken.
