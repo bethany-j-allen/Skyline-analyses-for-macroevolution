@@ -548,7 +548,7 @@ The model is almost ready, but we want to add one last set of arguments to it. O
 	
 Beneath our model, you will see a line which sets the `samplingRate` to 0. This refers to fossil sampling, which we have now introduced into our model, so this line needs to be removed.
 
-In its place, we instead need to add an instruction to the XML about the direction of time. By default, the fossilized-birth-death model implemented in BEAST2 assumes that the breakpoint times are measured forward-in-time from the origin. However, we specified our breakpoint times as offsets backward-in-time from the youngest tip. We did this because we know the age of the youngest tip exactly, but we don't know the age of the origin (we are estimating the origin time). To switch the time direction for the fossilized-birth-death model we use the `reverseTimeArrays` parameter. Here, we are telling the model to use the opposite direction of time to the default in five dimensions: in order, this refers to our three rate parameters (`birth`, `death` and `sampling`) plus `rho` and the `removalProbability` (which we do not need but will specify anyway).
+In its place, we instead need to add an instruction to the XML about the direction of time. The birth-death skyline model implemented in BEAST2 assumes that time runs forwards, from the origin to the present. That means  that by default it assumes the breakpoint times are measured forward-in-time from the origin. However, we specified our breakpoint times as offsets backward-in-time from the youngest tip. We did this because we know the age of the youngest tip exactly, but we don't know the age of the origin (we are estimating the origin time). To switch the time direction for the breakpoint times we use the `reverseTimeArrays` parameter. Here, we are telling the model to use the opposite direction of time to the default in five dimensions: in order, this refers to our three rate parameters (`birth`, `death` and `sampling`) plus `rho` and the `removalProbability` (which we do not need but will specify anyway).
 
 >Remove the line fixing `samplingRate` to 0:
 >
@@ -719,6 +719,9 @@ We can now run the analysis in BEAST2. As with the exponential coalescent model,
 
 The analysis should take about 15 minutes to run.
 
+
+
+
 ## Visualising the results
 
 Once the BEAST2 analyses have finished running, we will use **R** to plot our skylines. The log files are relatively easy to handle in R, so we have provided custom code for this rather than using an R package, although this code does require the **tidyverse** to be installed (specifically, we will use **dplyr** and **ggplot2**).
@@ -733,7 +736,7 @@ library(tidyverse)
 
 ### The Exponential Coalescent model results
 
-First we will take a look at our **exponential coalescent** skyline. The log file from this analysis needs to be read into R, either with or without setting the working directory (the location where R will look for your files). We will also immediately trim the log to remove the first 10% of iterations as burn-in.
+First we will take a look at our **exponential coalescent** skyline. The log file from this analysis needs to be read into R, either with or without setting the working directory (the location where R will look for your files). We will also immediately trim the log file to remove the first 10% of iterations as burn-in.
 
 ```R
 # Navigate to Session > Set Working Directory > Choose Directory (on RStudio)
@@ -745,8 +748,9 @@ coal_file <- "dinosaur_coal.log"
 coalescent <- read.table(coal_file, header = T) %>% slice_tail(prop = 0.9)
 ```
 
-The next job is to summarise the values across the remaining iterations in the log. We will pivot the table so that our diversification rate estimates sit in a single column, then estimate our median and 95% **highest posterior density** (HPD; Bayesian "confidence intervals") values within each time bin.
+The next job is to summarise the values across the remaining iterations in the log. We will pivot the table so that our diversification rate estimates sit in a single column, then estimate our median and 95% **highest posterior density** (HPD interval; a Bayesian analogue to a confidence interval) values within each time bin.
 
+**===THESE ARE NOT 95% HPD INTERVALS!===**
 ```R
 #Pivot the table to stack the rate estimates into a single column
 coalescent <- pivot_longer(coalescent, c(growthRate1, growthRate2, growthRate3,
@@ -775,7 +779,7 @@ coalescent_summary$interval <- factor(coalescent_summary$interval,
                                                  "Late Cretaceous"))
 ```
 
-We can plot our skylines as error bars, with a discrete bar showing the range of estimated diversification rates in each time interval.
+We can plot our skyline as error bars, with a discrete bar showing the range of estimated diversification rates in each time interval.
 
 ```R
 #Plot diversification skyline as error bars
@@ -796,7 +800,8 @@ ggplot(data = coalescent_summary, aes(x = interval, y = median, ymin = lowCI,
 	<figcaption>Figure 7: The exponential coalescent diversification skyline plotted using error bars.</figcaption>
 </figure>
  
-Alternatively, we can plot the skylines as continuous by extending our estimates across the temporal duration of each time interval, in a **piecewise constant** skyline.
+Alternatively, we can plot the skyline as continuous by extending our estimates across the temporal duration of each time interval, in a **piecewise constant** skyline.
+Alternatively, by extending our estimates across the temporal duration of each time interval, we can plot the diversification rate over time as a **piecewise constant** skyline.
 
 ```R
 #Plot diversification skyline as a ribbon plot
@@ -824,7 +829,7 @@ ggplot(to_plot) +
 	<figcaption>Figure 8: The exponential coalescent diversification skyline plotted using a ribbon plot.</figcaption>
 </figure>
  
-We can also investigate the other parameter estimated in the model, the estimated **effective population size** at the start of the coalescent process (which is the youngest end of the time interval). For us, this corresponds to an estimate of the **total species diversity** of non-avian dinosaurs just before the Cretaceous-Paleogene boundary. Again, we can estimate the median and 95% HPD values for our diversity estimates.
+We can also investigate the other parameter estimated in the model, the estimated **effective population size** at the start of the coalescent process (which is the youngest end of the time interval). We can use this estimate as a measure of the **total species diversity** of non-avian dinosaurs just before the Cretaceous-Paleogene boundary. Again, we can estimate the median and 95% HPD values for our diversity estimates.
 
 ```R
 #Extract estimated diversity
@@ -840,10 +845,9 @@ print(pop_data)
 <figure>
 	<a id="fig:9"></a>
 	<img style="width:25%;" src="figures/Coalescent pop table.png" alt="">
-	<figcaption>Figure 9: The estimated number of dinosaur species alive just before the Cretaceous-Paleogene boundary.</figcaption>
+	<figcaption>Figure 9: The estimated effective population size of the dinosaur clade just before the Cretaceous-Paleogene boundary.</figcaption>
 </figure>
 	
-Our coalescent model therefore suggests that between 380 and 950 dinosaur species became extinct during the end-Cretaceous mass extinction.
 
 ### The Fossilised-Birth-Death model results
 
@@ -859,7 +863,7 @@ fbd_file <- "dinosaur_BDSKY.log"
 fbd <- read.table(fbd_file, header = T) %>% slice_tail(prop = 0.9)
 ```
 
-We parameterised this model using **birth**, **death** and **fossil sampling** rates, so these are the parameters included in our log. However, our exponential coalescent model estimated **diversification** rates. If we want to make the fairest comparison between the two models, we should do so using the same parameters. Fortunately, it is very straightforward to convert birth and death rates into diversification rates: simply, {% eqinline diversification = births - deaths %}. We can also calculate **turnover**, which describes the average duration of lineages (species) in our clade. Turnover is the ratio between births and deaths, so we will calculate it using {% eqinline turnover = births / deaths %}.
+We parameterised this model using **birth**, **death** and **fossil sampling** rates, so these are the parameters included in our log. However, our exponential coalescent model estimated **diversification** rates. If we want to make the fairest comparison between the two models, we should do so using the same parameters. Fortunately, it is straightforward to convert birth and death rates into diversification rates: simply, {% eqinline \textrm{diversification} = \mathrm{births} - \mathrm{deaths} %}. We can also calculate **turnover**, which describes the average duration of lineages (species) in our clade. Turnover is the ratio between births and deaths, so we will calculate it using {% eqinline \mathrm{turnover} = \frac{\mathrm{births} }{ \mathrm{deaths}} %}.
 
 ```R
 #Calculate diversification and turnover
@@ -875,7 +879,7 @@ colnames(TO_rates) <- paste0("TORate.",
                              seq(1:ncol(TO_rates)))
 ```
 
-We can then calculate the median and 95% HPD values for our diversification and turnover estimates, just as we did before. This time, note that because the birth-death model runs from the origin forwards in time, our "first" time bin is the oldest and our "fourth" time bin is the youngest.
+We can then calculate the median and 95% HPD values for our diversification and turnover estimates, just as we did before. This time, note that because the birth-death model runs from the origin forward-in-time, our "first" time bin is the oldest and our "fourth" time bin is the youngest. Even though we flipped the time direction of the breakpoint times when setting up the XML file (using the `reverseTimeArrays` vector to change the direction of `birthRateChangeTimes` etc.), this has no effect on the order in which time bins are logged in the log file, where time is always assumed to run forwards, from the oldest to the youngest bin.
 
 ```R
 #Pivot the table to stack the rate estimates into a single column
@@ -1034,7 +1038,7 @@ ggplot(samp_plot) +
 	<figcaption>Figure 11: The fossilsed-birth-death diversification skyline plotted using a ribbon plot.</figcaption>
 </figure>
 
-We can also examine the last parameter in our fossilised-birth-death model, which is the **origin** of our clade, dinosaurs. Note that we add 66 to our estimates to account for the difference between the youngest tip (at the Cretaceous-Paleogene boundary) and the present day.
+We can also examine the last parameter in our fossilised-birth-death model, which is the **origin** of our clade, the dinosaurs. Note that we add 66 to our estimates to account for the difference between the youngest tip (at the Cretaceous-Paleogene boundary) and the present day. If we didn't add 66 to our estimates we would be estimating the duration of non-avian dinosaurs on Earth, instead of the time of their origin. 
 
 ```R
 #Extract origin data
@@ -1051,7 +1055,7 @@ print(origin_data)
 <figure>
 	<a id="fig:12"></a>
 	<img style="width:25%;" src="figures/FBD origin table.png" alt="">
-	<figcaption>Figure 12: The estimated duration of the non-avian dinosaurs.</figcaption>
+	<figcaption>Figure 12: The estimated origin time of dinosaurs (measured in Ma).</figcaption>
 </figure>
 	
 Our fossilised-birth-death model therefore suggests that dinosaurs originated around 246Ma, which would be during the Middle Triassic. 
