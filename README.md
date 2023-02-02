@@ -73,7 +73,7 @@ After installing the package, it is on your computer, but BEAUti is unable to lo
 
 ## Setting up the Exponential Coalescent Skyline analysis
 
-We will start with the simpler of the two models, the **exponential coalescent**. This model is similar in construction to the **constant coalescent** model applied in the **Skyline plots** tutorial, but instead of assuming that the size of the population remains constant during our individual time intervals, we instead assume that they are experiencing **exponential growth or decline**. The advantage of using this model is that while the constant coalescent estimates **constant effective population sizes** within each time interval, the exponential coalescent instead estimates **diversification rates** for each of the time intervals, which is what we would like to infer for our dinosaurs.
+We will start with the simpler of the two models, the **exponential coalescent**. This model is somewhat similar in construction to the **coalescent Bayesian skyline** model used in the **Skyline plots** tutorial, but instead of assuming that the size of the population remains constant during our individual time intervals, we instead assume that they are experiencing **exponential growth or decline** at a constant rate during each interval, with instantaneous shifts in the growth rate between intervals. The advantage is that instead of estimating **constant effective population sizes** within each time interval, we estimate **diversification rates** for each of the time intervals, which is what we would like to infer for our dinosaurs. Furthermore, whereas the coalescent Bayesian skyline model only allows interval boundaries to coincide with coalescent (or branching) times in the tree, we will use arbitrary time intervals, which will allow us to directly estimate diversification rates during geological intervals of interest. 
 
 Many of the features we will need in our XML files are not currently implemented in BEAUti. However, for both models, we will start our analyses by creating XML files in BEAUti which will then serve as a template for us to alter by hand ("hack") later. 
 
@@ -99,9 +99,9 @@ Most of the default tabs in BEAUti relate to inferring the phylogeny, which we w
 	<figcaption>Figure 3: The priors tab with a Coalescent Exponential Population tree prior.</figcaption>
 </figure>
 
-Here we see that the model has two parameters, `ePopSize` and `growthRate`. `ePopSize` refers to the **effective population size** at the start of the coalescent process. Because coalescent models consider time from the present backwards (see **Skyline plots** tutorial), this therefore refers to the size of the population at the end of our youngest time interval. The tips in our phylogeny are species, and so in this context, our effective population size can be considered to be analogous to **total species richness**. Our `growthRate` is simply our **diversification rate**.
+Here we see that the model has two parameters, `ePopSize` and `growthRate`. `ePopSize` refers to the **effective population size** at the start of the coalescent process. Because coalescent models consider time from the present backwards (see **Skyline plots** tutorial), this therefore refers to the size of the population at the end of our youngest time interval. The tips in our phylogeny are species, and so in this context, our effective population size can be considered to be a measure of the **total species richness**. Our `growthRate` is simply our **diversification rate**.
 
-We actually only need the population size prior, and will remove the growth rate prior later. The default `ePopSize` prior is a 1/X (or `OneOnX`), which is a good choice when you have little knowledge about what the shape of your prior should be, placing reduced probability on higher values. We will keep the shape of this prior as the default, but change the initialisation values (the value of the parameters in their first iteration of the chain). We will set the starting `ePopSize` to 1, and the `growthRate` to 0.
+We actually only need the population size prior, and will remove the growth rate prior later. The default `ePopSize` prior is a 1/X (or `OneOnX`), which is a good choice when you have little knowledge about what the shape of your prior should be, placing reduced probability on higher values. We will keep the shape of this prior as the default, but change the initialisation values (the value of the parameters in their first iteration of the chain). We will set the starting `ePopSize` to 1, and the initial `growthRate` estimate to 0.
 
 >Click on the **initial =** button for `ePopSize` and change the **initialisation value** to 1.0.
 >
@@ -115,15 +115,17 @@ We actually only need the population size prior, and will remove the growth rate
 
 We will go into much more detail on the contents of this tab later, when setting up our birth-death model.
 
-We can leave the rest of the tabs as they are and save the XML file. We want to shorten the chain length and decrease the sampling frequency so the analysis completes in a reasonable time and the output files stay small. Note that we won't alter the **treelog** because we won't be using it, as our tree is fixed. (Keep in mind that it will be necessary to run a longer chain for parameters to mix properly and converge.)
+We can leave the rest of the tabs as they are and save the XML file. We want to shorten the chain length and decrease the sampling frequency so the analysis completes in a reasonable time and the output files stay small. Note that we won't alter the **treelog**, because we won't be using it, as our tree is fixed. (Keep in mind that it will be necessary to run a longer chain for parameters to mix properly and converge.)
 
 >Navigate to the **MCMC** panel.
 >
 >Change the **Chain Length** from 10’000’000 to 1’000’000.
 >
->Click on the arrow next to **tracelog** and change the **File Name** to `$(filebase).log` and set the Log Every to 1’000.
+>Click on the arrow next to **tracelog** and change the **File Name** to `$(filebase).log` and set the Log Every to 1’000. 
 >
->Leave all other settings at their default values and save the file as `dinosaur_coalescent.xml`.
+>Leave all other settings at their default values and save the file as `dinosaur_coal.xml`.
+
+Since we used `$(filebase).log` as the name of the **tracelog** the log file will be saved with the same name as our XML file, in this case `dinosaur_coal.xml`. 
 
 ### Amending the Analysis Files
 
@@ -131,7 +133,7 @@ We can now start "hacking" our XML template to ensure that it includes our desir
 
 >Open `dinosaur_coal.xml` in your preferred text editor.
 
-The first line sets out information about the format of the xml and its contents, which we can ignore. The next section is labelled `data`, and contains our dummy alignment. We don't need this section, so it can be commented out or simply deleted.
+The first line sets out information about the format of the XML file and its contents, which we can ignore. The next section is labelled `data`, and contains our dummy alignment. We don't need this section, so it can be commented out or simply deleted.
 
 >Remove the `data` section of the XML:
 >
@@ -144,7 +146,7 @@ The first line sets out information about the format of the xml and its contents
 >                 </data>
 >```
 
-In it's place, we instead need to read in our phylogeny. We will do this by pasting in a new section, `tree`, which will use `TreeFromNewickFile` in the package **feast** to retrieve the phylogeny from our tree file, `Lloyd.tree`.
+In its place, we instead need to read in our phylogeny. We will do this by pasting in a new section, `tree`, which will use `TreeFromNewickFile` in the package **feast** to retrieve the phylogeny from our tree file, `Lloyd.tree`.
 
 >Where the `data` section was in the XML, paste in the `tree` section:
 >
@@ -156,7 +158,7 @@ In it's place, we instead need to read in our phylogeny. We will do this by past
 
 The section after this contains a block of statements labelled `map`, which links the different distributions we might use (for example, for our priors) to the BEAST2 code which defines them. We will leave this alone, and move on to the largest and final block, `run`, which describes the analysis we want to carry out.
 
-The first subsection within the `run` block is labelled `state`. This describes the objects inferred within the analysis. The first object described is the `tree`, based on our dummy alignment. As we are not inferring our tree, it can be removed from this section.
+The first subsection within the `run` block is labelled `state`. This describes the objects inferred within the analysis (i.e. all of the model parameters we want to estimate). The first object described is the `tree`, based on our dummy alignment. As we are not inferring our tree, it can be removed from this section.
 
 >Remove the `tree` part of the `state` subsection of the XML:
 >
@@ -182,7 +184,7 @@ After this we see descriptions of our two parameters, `ePopSize` and `growthRate
 > </state>
 >```
 
-The next block, `init`, describes the initialisation processes, namely construction of the starting tree and assoicated population model, neither of which we need.
+The next block, `init`, describes the initialisation processes, namely construction of the starting tree, which is a random tree simulated from an associated population model (here a constant-size coalescent). Since we are reading in a previously constructed tree our tree is already initialised and we don't need this block.
 
 >Remove the `init` subsection of the XML:
 >
@@ -206,7 +208,7 @@ The next block of the XML is arguably the most important: it defines the **prior
 </distribution>
 ```
 
-The arguments determine the model to be used, and link the two parameters in the model, `growthRate` and `popSize`, to our definitions of them elsewhere in the XML. We can see that at present, the model uses a single growth rate for the full duration of the coalescent process. Instead of using this model, we are going to use a variation on it which is available in the package **feast**. This model is described as a `CompoundPopulationModel`, and allows multiple intervals to be defined over the course of our coalescent process, each of which can have their own growth rate. This will enable us to estimate a different diversification rate for each of our four time intervals of interest. The basic parameterisation of the model, as described on the [feast Github page](https://github.com/tgvaughan/feast), is as follows:
+The arguments determine the model to be used, and link the two parameters in the model, `growthRate` and `popSize`, to our definitions of them elsewhere in the XML. We can see that at present, the model uses a single growth rate for the full duration of the coalescent process. Instead of using this model, we are going to use a variation on it which is available in the package **feast**. This model is described as a `CompoundPopulationModel`, and allows multiple intervals to be defined over the course of our coalescent process, each of which can have their own population model. This will enable us to estimate a different diversification rate for each of our four time intervals of interest. The basic parameterisation of the model, as described on the [feast Github page](https://github.com/tgvaughan/feast), is as follows:
 
 ```xml
 <populationModel spec="CompoundPopulationModel">
@@ -267,8 +269,9 @@ In the next few lines of our XML we can see that the shape of our prior distribu
 >                <OneOnX id="OneOnX.3" name="distr"/>
 > </prior>
 >```
+**===THERE IS STILL IMPLICIT PRIORS ON THE GROWTH RATES. SINCE NO PARAMETER BOUNDS ARE SET IT IS UNIF(-INF,INF)===**
 
-The last part of the `distribution` block is labelled the `likelihood`, and contains the `treeLikelihood`, which determines how well the inferred tree fits the data. As we are using a fixed phylogeny, we can remove this from our XML (we have already renamed our model the `likelihood` anyway).
+The last part of the `distribution` block is labelled the `likelihood`, and contains the `treeLikelihood`, which determines how well the inferred tree fits the sequence data. As we are using a fixed phylogeny and don't have any sequence data, we can remove this from our XML (we have already renamed our model the `likelihood` anyway).
 
 >Remove the `likelihood` block containing the `treeLikelihood`:
 >
@@ -288,7 +291,7 @@ The last part of the `distribution` block is labelled the `likelihood`, and cont
 > </distribution>
 >```
 
-The penultimate block of the XML describes our **operators**. These define the moves that are used to propose new parameter values in the next iteration of the MCMC, so are fundamentally important to how our chain explores parameter space. Some are relevant to tree construction, so we can remove these.
+The penultimate block of the XML describes our **operators**. These define the moves that are used to propose new parameter values in the next iteration of the MCMC algorithm, so are fundamentally important to how our chain explores parameter space. Some are relevant to tree construction, so we can remove these.
 		
 >Remove the tree operators:
 >
@@ -346,7 +349,7 @@ We can now run the analysis in BEAST2. It's important to have `Lloyd.tree` saved
 >
 >Download and save `Lloyd.tree` in the folder containing your XML file. Find the BEAST2 executable in **BEAST_2.X.X** (depending on your version) **> bin**. Right-click on the **beast** executable and select **Create shortcut** on Windows or **Make alias** on Mac. Cut and paste the created shortcut/alias into the folder containing your analysis files. If you open your **terminal** and navigate to the folder containing your files, you should now be able to run the analysis through the terminal using `beast dinosaur_coal.xml` (or `beast dinosaur_coal_final.xml` if you're using our ready-made version).
 
-The analysis should take about 15 minutes to run. In the meantime, you can start setting up the fossilised-birth-death XML.
+The analysis should take about 15 minutes to run. In the meantime, you can start setting up the fossilised-birth-death analysis.
 
 ## Setting up the Fossilised-Birth-Death Skyline analysis
 
