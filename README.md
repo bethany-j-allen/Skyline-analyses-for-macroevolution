@@ -10,7 +10,7 @@ tracerversion: 1.7.x
 
 # Background
 
-Bayesian phylodynamics uses the shape of a phylogenetic tree to infer characteristics of the population represented in the phylogeny. Although widely applied to epidemiological datasets, the approach is yet to be used widely in macroevolution. In this case, skyline methods can be used to estimate parameters such as speciation, extinction and sampling rates over time, as well as the total number of lineages (usually species diversity). In this tutorial, we demonstrate how to apply the exponential coalescent and fossilised-birth-death skyline models, which both estimate piecewise-constant evolutionary rates through time, to a dinosaur supertree. The models differ in the temporal direction in which they are applied, and the assumptions they make about how the phylogeny is sampled. We recommend reading the **Skyline plots** tutorial before attempting this one, as it covers a lot of the theory behind the models which we will not repeat here, except to highlight points which are relevant to macroevolutionary datasets.
+Bayesian phylodynamics uses the shape of a phylogenetic tree to infer characteristics of the population represented in the phylogeny. Although widely applied to epidemiological datasets, the approach is yet to be used widely in macroevolution. In this case, skyline methods can be used to estimate parameters such as speciation, extinction and sampling rates over time, as well as the total number of lineages (usually species diversity). In this tutorial, we demonstrate how to apply the exponential coalescent and fossilised-birth-death skyline models, which both estimate piecewise-constant evolutionary rates through time, to a dinosaur supertree. The models differ in the temporal direction in which they are applied, and the assumptions they make about how the phylogeny is sampled. We recommend reading the [**Skyline plots**](../Skyline-plots/) tutorial before attempting this one, as it covers a lot of the theory behind the models which we will not repeat here, except to highlight points which are relevant to macroevolutionary datasets.
 
 ----
 
@@ -36,7 +36,7 @@ We will need to edit the XML files produced by BEAUti, for which we'll need a te
 
 ### R / RStudio
 
-We will be using R to analyze the output of the Birth-Death Skyline plot. RStudio provides a user-friendly graphical user interface to R that makes it easier to edit and run scripts. (It is not necessary to use RStudio for this tutorial.)
+We will be using R to analyze the output of our analyses. RStudio provides a user-friendly graphical user interface to R that makes it easier to edit and run scripts. (It is not necessary to use RStudio for this tutorial).
 
 ----
 
@@ -115,7 +115,7 @@ We actually only need the population size prior, and will remove the growth rate
 
 We will go into much more detail on the contents of this tab later, when setting up our birth-death model.
 
-We can leave the rest of the tabs as they are and save the XML file. We want to shorten the chain length and decrease the sampling frequency so the analysis completes in a reasonable time and the output files stay small. Note that we won't alter the **treelog**, because we won't be using it, as our tree is fixed. (Keep in mind that it will be necessary to run a longer chain for parameters to mix properly and converge.)
+We can leave the rest of the tabs as they are and save the XML file. We want to shorten the chain length and decrease the sampling frequency so the analysis completes in a reasonable time and the output files stay small. Note that we won't alter the **treelog**, because we won't be using it, as our tree is fixed. (Keep in mind that it will be necessary to run a longer chain for parameters to mix properly and converge).
 
 >Navigate to the **MCMC** panel.
 >
@@ -368,10 +368,10 @@ Once again, we will skip straight to the **Priors** tab.
 <figure>
 	<a id="fig:5"></a>
 	<img style="width:75%;" src="figures/FBD priors tab.png" alt="">
-	<figcaption>Figure 5: The priors tab with a Birth Death Skyline tree prior.</figcaption>
+	<figcaption>Figure 5: The priors tab with a birth-death skyline tree prior.</figcaption>
 </figure>
 
-The "standard" `contemporary` birth death skyline is parameterised using a reproductive number, a "become uninfectious" rate and a sampling proportion. However, here we are using the `BDSParam` model, which refers to the so-called "canonical" parameterisation, using a birth rate (representing speciation here), a death rate (representing extinction here) and an extant sampling probability, as defined in {% cite Stadler2009 --file Skyline-analyses-for-macroevolution/master-refs.bib %}. As our phylogeny is of non-avian dinosaurs, for which we only have fossils and no extant (genetic) samples, we will later exchange the extant sampling probability, usually denoted using {% eqinline \rho %}, for a fossil sampling rate, usually denoted using {% eqinline \psi %}.
+The "standard" `contemporary` birth-death skyline is parameterised using a reproductive number, a "become uninfectious" rate and a sampling proportion. However, here we are using the `BDSParam` model, which refers to the so-called "canonical" parameterisation, using a birth rate (representing speciation here), a death rate (representing extinction here) and an extant sampling probability, as defined in {% cite Stadler2009 --file Skyline-analyses-for-macroevolution/master-refs.bib %}. As our phylogeny is of non-avian dinosaurs, for which we only have fossils and no extant (genetic) samples, we will later exchange the extant sampling probability, usually denoted using {% eqinline \rho %}, for a fossil sampling rate, usually denoted using {% eqinline \psi %}.
 
 Choosing sensible priors for these parameters is not straightforward, so we will select priors which are relatively unrestrictive. For the birth and death rates, we will use **exponential** priors with a mean of 1.0; this places more weight on low rates, but still permits values which are towards the higher end of those estimated from living animals and plants {% cite HenaoDiaz2019 --file Skyline-analyses-for-macroevolution/master-refs.bib %}. For the sampling rate, we will also choose an exponential prior, this time with a mean of 0.2.
 
@@ -539,7 +539,7 @@ The last argument currently in the model line links the tree into the model. We 
 >tree="@tree"
 >```
 
-The model is almost ready, but we want to add one last set of arguments to it. Our rates are **piecewise constant**, and we have already specified in the `state` block how many **dimensions** (constant intervals) each of our rates will have. By default, the break points in our rates are evenly spaced between the origin and the youngest tip, meaning that all of the intervals are the same length. However, we can add arguments to our model specifying when we would like our break points to be. For us, it makes sense to place these break points at the boundaries of geological intervals, so that we estimate a rate for each interval. As mentioned before, we are going to align our break points to the boundaries between the Triassic, Jurassic, Early Cretaceous and Late Cretaceous. To do this, we need to supply vectors of these times relative to the phylogeny. We are assuming that the youngest tip, at which `t=0`, lies at the Cretaceous-Paleogene boundary, so the vectors describe the cumulative duration of these geological intervals relative to this boundary. We need to specify a separate vector for each of our rates.
+The model is almost ready, but we want to add one last set of arguments to it. Our rates are **piecewise constant**, and we have already specified in the `state` block how many **dimensions** (constant intervals) each of our rates will have. By default, the breakpoints in our rates are evenly spaced between the origin and the youngest tip, meaning that all of the intervals are the same length. However, we can add arguments to our model specifying when we would like our breakpoints to be. For us, it makes sense to place these breakpoints at the boundaries of geological intervals, so that we estimate a rate for each interval. As mentioned before, we are going to align our breakpoints to the boundaries between the Triassic, Jurassic, Early Cretaceous and Late Cretaceous. To do this, we need to supply vectors of these times relative to the phylogeny. We are assuming that the youngest tip, at which `t=0`, lies at the Cretaceous-Paleogene boundary, so the vectors describe the cumulative duration of these geological intervals relative to this boundary. We need to specify a separate vector for each of our rates.
 
 >Add to the end of the model line:
 >
@@ -800,7 +800,7 @@ ggplot(data = coalescent_summary, aes(x = interval, y = median, ymin = lowCI,
 <figure>
 	<a id="fig:7"></a>
 	<img style="width:50%;" src="figures/Coalescent_errors.png" alt="">
-	<figcaption>Figure 7: The exponential coalescent diversification skyline plotted using error bars.</figcaption>
+	<figcaption>Figure 7: The exponential coalescent diversification rate skyline plotted using error bars.</figcaption>
 </figure>
  
 Alternatively, we can plot the skyline as continuous by extending our estimates across the temporal duration of each time interval, in a **piecewise constant** skyline.
@@ -829,7 +829,7 @@ ggplot(to_plot) +
 <figure>
 	<a id="fig:8"></a>
 	<img style="width:50%;" src="figures/Coalescent_ribbon.png" alt="">
-	<figcaption>Figure 8: The exponential coalescent diversification skyline plotted using a ribbon plot.</figcaption>
+	<figcaption>Figure 8: The exponential coalescent diversification rate skyline plotted using a ribbon plot.</figcaption>
 </figure>
  
 We can also investigate the other parameter estimated in the model, the estimated **effective population size** at the start of the coalescent process (which is the youngest end of the time interval). We can use this estimate as a measure of the **total species diversity** of non-avian dinosaurs just before the Cretaceous-Paleogene boundary. Again, we can estimate the median and 95% HPD values for our diversity estimates.
@@ -990,7 +990,7 @@ ggplot(data = samp_data, aes(x = interval, y = median, ymin = lowCI,
 <figure>
 	<a id="fig:10"></a>
 	<img style="width:50%;" src="figures/FBD errors.png" alt="">
-	<figcaption>Figure 10: The fossilsed-birth-death diversification skyline plotted using error bars.</figcaption>
+	<figcaption>Figure 10: The fossilsed-birth-death diversification rate skyline plotted using error bars.</figcaption>
 </figure>
 
 ...but also as **piecewise constant** skylines using ribbon plots.
@@ -1038,7 +1038,7 @@ ggplot(samp_plot) +
 <figure>
 	<a id="fig:11"></a>
 	<img style="width:50%;" src="figures/FBD ribbon.png" alt="">
-	<figcaption>Figure 11: The fossilsed-birth-death diversification skyline plotted using a ribbon plot.</figcaption>
+	<figcaption>Figure 11: The fossilsed-birth-death diversification rate skyline plotted using a ribbon plot.</figcaption>
 </figure>
 
 We can also examine the last parameter in our fossilised-birth-death model, which is the **origin** of our clade, the dinosaurs. Note that we add 66 to our estimates to account for the difference between the youngest tip (at the Cretaceous-Paleogene boundary) and the present day. If we didn't add 66 to our estimates we would be estimating the duration of non-avian dinosaurs on Earth, instead of the time of their origin. 
