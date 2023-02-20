@@ -352,7 +352,7 @@ The analysis should take about 15 minutes to run. In the meantime, you can start
 
 ## Setting up the Fossilised-Birth-Death Skyline analysis
 
-As with the exponential coalscent model, many of the features we will need in our XML file are not yet implemented in BEAUti, but we will start our analyses by creating XML files in BEAUti.
+As with the exponential coalscent model, many of the features we will need in our XML file are not yet implemented in BEAUti, but we will start our analyses by creating template XML files in BEAUti.
 
 ### Creating the Analysis Files with BEAUti
 
@@ -362,19 +362,19 @@ As before, we need to start by uploading our dummy `.nexus` file as an alignment
 
 Once again, we will skip straight to the **Priors** tab.
 
->Select the **Priors** tab and choose **Birth Death Skyline BDSParam** as the tree prior.
+>Select the **Priors** tab and choose **Birth Death Skyline Contemporary BDSParam** as the tree prior.
 	
 <figure>
 	<a id="fig:5"></a>
 	<img style="width:75%;" src="figures/FBD priors tab.png" alt="">
-	<figcaption>Figure 5: The priors tab with a Birth Death Skyline tree prior.</figcaption>
+	<figcaption>Figure 5: The priors tab with a birth-death skyline tree prior.</figcaption>
 </figure>
 
-The "standard" `contemporary` birth death skyline is parameterised using a reproductive number, a "become uninfectious" rate and a sampling proportion. However, here we are using the `BDSParam` model, which refers to parameterisation using a birth rate (here, speciation), a death rate (here, extinction) and an extant sampling proportion. As our phylogeny is of non-avian dinosaurs, for which we only have fossils and no extant (genetic) samples, we will later exchange the extant sampling proportion, usually denoted using {% eqinline rho %}, for a fossil sampling rate, usually denoted using {% eqinline psi %}.
+The "standard" `contemporary` birth-death skyline is parameterised using a reproductive number, a "become uninfectious" rate and a sampling proportion. However, here we are using the `BDSParam` model, which refers to the so-called "canonical" parameterisation, using a birth rate (here representing speciation), a death rate (here representing extinction) and an extant sampling probability (as defined in {% cite Stadler2009 --file Skyline-analyses-for-macroevolution/master-refs.bib %}). As our phylogeny is of non-avian dinosaurs, for which we only have fossils and no extant (genetic) samples, we will later exchange the extant sampling probability, usually denoted using {% eqinline \rho %}, for a fossil sampling rate, usually denoted using {% eqinline \psi %}.
 
-Choosing sensible priors for these parameters is not straightforward, so we will select priors which are relatively unrestrictive. For the birth and death rates, we will use **exponential** priors with a mean of 1.0; this places more probability on small rates, but still permits rates which are towards the higher end of those estimated from living animals and plants {% cite HenaoDiaz2019 --file Tutorial-Template/master-refs.bib %}. For the sampling rate, we will also choose an exponential prior, this time with a mean of 0.2.
+Choosing sensible priors for these parameters is not straightforward, so we will select priors which are relatively unrestrictive. For the birth and death rates, we will use **exponential** priors with a mean of 1.0; this places more weight on low rates, but still permits values which are towards the higher end of those estimated from living animals and plants {% cite HenaoDiaz2019 --file Skyline-analyses-for-macroevolution/master-refs.bib %}. For the sampling rate, we will also choose an exponential prior, this time with a mean of 0.2.
 
-On the **initial =** buttons you will see two sets of square brackets. The first indicates what the starting value for that parameter will be; we need to alter our initialisation values to ensure that they sit within our prior distributions. The second contains two values which denote the limits of the range of values that our parameters are permitted to take, which are also important to consider carefully. Priors influence the probability of certain values being tested in your chain, but values which are improbable under your prior can still be selected if the signal in your data is strong enough. Setting this range provides hard limits to your parameter values regardless of your priors. Our parameters are all rates, expressed per branch per million years, so the full set of values they can take ranges between 0.0 and infinity.
+On the **initial =** buttons you will see two sets of square brackets. The first indicates what the starting value for that parameter will be; we always need to check our initialisation values to ensure that they sit within our prior distributions. The second contains two values which denote the limits of the range of values that our parameters are permitted to take, which are also important to consider carefully. The prior distribution influences the probability of certain parameter values being sampled in the MCMC chain, but values across the entire prior range, even very improbable values, can still be sampled. This is especially true if there is a strong signal for such parameter values in the data (high likelihood). If we have a strong reason to believe such parameter values are unrealistic, we can (and should) use parameter limits to exclude them. Setting finite upper and lower bounds in effect changes the prior to be the specified prior distribution multiplied by a uniform distribution on this range. Note that when no prior distribution is explicitly specified in BEAST2, the prior is then just a uniform prior across the parameter range (all parameters therefore have priors). Our parameters are all rates, expressed per branch per million years, so the full set of values they can take ranges between 0 and infinity. (For now, the **rho** parameter is defined between 0 and 1 because it is a sampling probability; later we will change this to a sampling rate, defined between 0 and infinity.)
 
 This is also the point where we express how many sections (here called **dimensions**) we want in our **piecewise constant** rates. Our rates will be assumed to be constant within these sections, but will be permitted to change at the break points between them. Similar to the exponential coalescent model, we are going to give our rates **four** dimensions, corresponding to the Triassic, Jurassic, Early Cretaceous and Late Cretaceous.
 
@@ -394,7 +394,7 @@ We can leave the rest of the tabs as they are and save the XML file. We will aga
 >
 >Change the **Chain Length** from 10’000’000 to 5’000’000.
 >
->Click on the arrow next to **tracelog** and change the **File Name** to `$(filebase).log` and set the Log Every to 1’000.
+>Click on the arrow next to **tracelog** and change the **File Name** to `$(filebase).log` and set the **Log Every** to 1’000.
 >
 >Leave all other settings at their default values and save the file as `dinosaur_BDSKY.xml`.
 
@@ -433,17 +433,19 @@ It is now time to "hack" our XML template, to remove the content we don't need a
 >        </tree>
 >```
 
-Following this we see a description of our three inferred rates: birth, death and sampling. These lines include a lot of information, much of which we specified earlier via the **Priors** tab in BEAUti. As previously mentioned, our sampling parameter is currently set up as the extant sampling proportion, `rho`, which we want to exchange for a fossil sampling rate, `sampling`. For the sake of readability, we will change the `id` (name) of our sampling parameter here from `rhoBDS` to `samplingBDS`. Here, this is simply a label and does not change what the parameter does, but it is how the parameter is referenced in other parts of the XML, where its name will also need to be changed.
+Following this we see a description of our three inferred rates: birth, death and sampling. These lines include a lot of information, much of which we specified earlier via the **Priors** tab in BEAUti. As previously mentioned, our sampling parameter is currently set up as the extant sampling probability, `rho`, which we want to exchange for a fossil sampling rate, `sampling`. For the sake of readability, we will change the `id` (name) of our sampling parameter here from `rhoBDS` to `samplingBDS`. Here, this is simply a label and does not change what the parameter does, but it is how the parameter is referenced in other parts of the XML, where its name will also need to be changed.
 
->Replace all instances of `rho` in the XML with `sampling`. There should be eight. This is most easily (and reliably) done using `Find & Replace` functionality.
+>Replace all instances of `rho` in the XML with `sampling`. There should be eight. This is most easily (and reliably) done using the `Find & Replace` functionality.
 
-To our three rates we will also add a fourth parameter, `origin`. This describes the time at which the most recent common ancestor of the clade diverged into its first two daughter species, i.e. the start of our evolutionary processes. Note that we want to infer this time because it is only the same as the timing of the first divergence in our sampled phylogeny if both of those initial species are represented in its tips. If this is not the case, the "true" origin must lie an unknown amount of time earlier than this first observed divergence.
+To our three rates we will also add a fourth parameter, `origin`. This denotes the time at which the evolutionary process started, in our case the origin of the dinosaur clade. Note that this time is always older than the time of the most recent common ancestor (MRCA) of the clade. Whereas the time of the MRCA denotes the first speciation event in the clade, the origin denotes the appearance of the first dinosaur, i.e. the start of the root branch leading to the MRCA. It is also worth keeping in mind that the MRCA of the phylogeny we're using, from {% cite Lloyd2008 --file Skyline-analyses-for-macroevolution/master-refs.bib %}, may not be the MRCA of the entire dinosaur clade. Since the tree is a _sampled_ tree and doesn't contain _all_ dinosaur species, it is possible that its MRCA is more recent than the MRCA of the _whole_ dinosaur clade.
 
-In this section we need to set the limits of our origin time and its initial value. BEAST2 assumes that time runs from the present backwards (as is the case in our **Exponential Coalescent** model), so we will set our origin's lower limit to 0 (the age of the youngest tip), and to be maximally conservative, its upper limit to `Infinity`. We will set the starting value to 200 (200 million years before the youngest tip), which corresponds to an age of approximately 200 + 66 = 266Ma (if our youngest tip lies at the Cretaceous-Paleogene boundary, when non-avian dinosaurs are thought to have become extinct). This would place the origin of dinosaurs during the middle Permian, which is perhaps a little earlier than most palaeontologists would speculate (late Permian to Early Triassic, e.g. ADD CITATION), but is certainly adequate for our first iteration.
+In this section we need to set the limits of our origin time and its initial value. BEAST2 assumes that time runs from the present backwards (as is the case in our **Exponential Coalescent** model), so we will set our origin's lower limit to 0 (the age of the youngest tip), and to be maximally conservative, its upper limit to `Infinity`. We will set the starting value to 200 (200 million years before the youngest tip), which corresponds to an age of approximately 200 + 66 = 266Ma (if our youngest tip lies at the Cretaceous-Paleogene boundary, when non-avian dinosaurs are thought to have become extinct). This would place the origin of dinosaurs during the middle Permian, which is perhaps a little earlier than most palaeontologists would speculate (late Permian to Early Triassic, e.g. **ADD CITATION**), but is certainly adequate for our first iteration.
 
->Paste in the `origin` line to the end of the `parameter`block:
+>Paste in the `origin` line to the end of the `parameter` block:
 >
+>```xml
 >`<parameter id="origin.t:empty" spec="parameter.RealParameter" lower="0.0" name="stateNode" upper="Infinity">200.0</parameter>`
+>```
 >
 >The `state` block should now look like this:
 >
@@ -470,7 +472,7 @@ As before, the `init` block is not needed for this analysis.
 >    </init>
 >```
 
-The next block describes the model, which is labelled `BirthDeathSkyContemporaryBDSParam`. With the addition of line breaks to aid readability, it should currently look like this:
+The next block describes the model, which is labelled `BirthDeathSkyContemporaryBDSParam`. With the addition of line breaks to aid readability, it should look like this:
 
 ```xml
 	<distribution id="BirthDeathSkyContemporaryBDSParam.t:empty"
@@ -499,11 +501,13 @@ Another option is to condition on ensuring that the model produces at least one 
 		
 >Change `conditionOnRoot="true"` to `conditionOnSurvival="true" conditionOnRhoSampling="false"`.
 		
-After this is the argument `contemp="true"`. This describes whether extant samples were collected in the present, i.e. at the age of the youngest tips. As we do not have extant samples, this is not relevant to our analysis, and can be removed. However, for our fossil sampling rate, we instead need to specify a different parameter, the `removalProbability`. When applying birth-death models to epidemiological datasets, sampling events are usually assumed to be associated with removal from the dataset: once a patient has been diagnosed with a pathogen, it is assumed that their pathogen is sampled and sequenced once (to enable inclusion in the phylogeny), and that they subsequently start receiving treatment, removing them from the population of diseased individuals. For our dataset, this would be equivalent to assuming that fossils are only deposited at the time of extinction. It would prevent multiple fossils existing for any single species, and mean than species for which fossils have been found could not be direct ancestors of other species in the phylogeny. While the relevance of these assumptions to supertrees is debatable, it is most logical to facilitate "sampled ancestors" in the case of fossil phylogenies (see {% cite Gavryushkina2014 --file Tutorial-Template/master-refs.bib %}), so we will set our `removalProbability` to 0.
+After this is the argument `contemp="true"`. When true, this means that all samples were collected at the same time (assumed to be the present, i.e. contemporaneous) and is the default setting for the **Birth Death Skyline Contemporary BDSParam** parameterization in BEAUti. Since our dataset is not homochronous, but we instead have heterochronous samples (in our case fossils that were deposited at different times), and no extant samples, we should set `contemp="false"`. However, the default for the fossilized-birth-death skyline is `contemp="false"`, so we can simply delete the line.
+		
+For our fossil sampling rate, we instead need to specify a different parameter, the `removalProbability`. When applying birth-death models to epidemiological datasets, sampling events are often assumed to be associated with removal; once patients have been sampled and their pathogens sequenced (which adds them to the phylogeny), it is assumed that they are removed from the infectious population, either through isolation or successful treatment and that they cannot subsequently infect anyone else. For our dataset, this assumption would prevent multiple fossils from existing for any single species, and mean that species for which fossils have been found could not be direct ancestors of other species in the phylogeny. In effect, this would be equivalent to assuming that fossils are only deposited at the time of exctinction. We can set the `removalProbability` to relax this assumption, and allow so-called "sampled ancestors". While the relevance of this assumption to supertrees is debatable, it is logical to set `removalProbability` to 0 for fossil phylogenies, since the probability is vanishingly small that any species went extinct exactly at the time a fossil was deposited (see {% cite Gavryushkina2014 --file Skyline-analyses-for-macroevolution/master-refs.bib %}).
 
 >Change `contemp="true"` to `removalProbability="0.0"`.
 
-The last argument currently in the model line links the tree into the model. We need to update the name of the tree object to correspond to our fixed phylogeny which we read in at the start of the XML.
+The last argument currently in the model line links the tree into the model. We need to update the name of the tree object to correspond to our fixed phylogeny, which we read in at the start of the XML.
 
 >Change `tree="@Tree.t:empty"` to `tree="@tree"`.
 
@@ -519,15 +523,19 @@ The model is almost ready, but we want to add one last set of arguments to it. O
 	
 Beneath our model, you will see a line which sets the `samplingRate` to 0. This refers to fossil sampling, which we have now introduced into our model, so this line needs to be removed.
 
-In it's place, we instead need to add an instruction to the XML about the direction of time. BEAST2 assumes that time runs from the present backwards, as is the case in coalescent models. But in birth-death models, time instead runs forward, and we need to specify this using `reverseTimeArrays`. Here, we are telling the model to use the opposite direction of time to the conventional one in five dimensions: in order, this refers to our three rate parameters (`birth`, `death` and `sampling`) plus `rho` and the `removalProbability` (which we do not need but will specify anyway).
+In its place, we instead need to add an instruction to the XML about the direction of time. The birth-death skyline model implemented in BEAST2 assumes that time runs forwards, from the origin to the present. That means that by default it assumes the break point times are measured forward-in-time from the origin. However, we specified our break point times as offsets backward-in-time from the youngest tip. We did this because we know the age of the youngest tip exactly, but we don't know the age of the origin (we are estimating it instead). To switch the time direction for the break point times, we use the `reverseTimeArrays` parameter. Here, we are telling the model to use the opposite direction of time to the default in five dimensions: in order, this refers to our three rate parameters (`birth`, `death` and `sampling`) plus `rho` and the `removalProbability` (which we do not need but will specify anyway).
 
 >Remove the line fixing `samplingRate` to 0:
 >
->`<parameter id="samplingRateBDS.t:empty" spec="parameter.RealParameter" name="samplingRate">0.0</parameter>`
+>```xml
+> <parameter id="samplingRateBDS.t:empty" spec="parameter.RealParameter" name="samplingRate">0.0</parameter>
+>```
 >
 >Replace it with an instruction to `reverseTimeArrays`:
 >
->`<reverseTimeArrays id="BooleanParameter.0" spec="parameter.BooleanParameter" dimension="5">true true true true true</reverseTimeArrays>`
+>```xml
+> <reverseTimeArrays id="BooleanParameter.0" spec="parameter.BooleanParameter" dimension="5">true true true true true</reverseTimeArrays>
+>```
 
 And with that our model is complete! In summary, the model should now read (with arguments in any order):
 
@@ -549,7 +557,7 @@ And with that our model is complete! In summary, the model should now read (with
 	</distribution>
 ```
 
-The next part of our XML specifies the shape of our prior distributions. As long as you changed all of the `rho` references to `sampling` previously, we don't need to modify the priors we already have any further; we provided all of the necessary information in BEAUti. We do, however, need to add a prior on our `origin`. You may remember that when specifying the parameter, we set our starting value to 200 (corresponding to 266Ma, which is on the early side of expert estimates for the origin of dinosaurs). To keep things simple, we will set the origin prior to a **uniform** distribution between 0 and 200.
+The next part of our XML specifies the shape of our prior distributions. As long as you changed all of the `rho` references to `sampling` previously, we don't need to modify the priors we already have any further; we provided all of the necessary information in BEAUti. We do, however, need to add a prior on our `origin`. You may remember that when specifying the parameter, we set our starting value to 200 (corresponding to 266Ma, which is on the older side of expert estimates for the origin of dinosaurs). To keep things simple, we will set the origin prior to a **uniform** distribution between 0 and 200.
 
 >Add an `origin` prior to the `priors` block:
 >
@@ -559,7 +567,7 @@ The next part of our XML specifies the shape of our prior distributions. As long
 > </prior>
 >```
 
-As before, the last part of the `distribution` block is labelled the `likelihood`, and contains the `treeLikelihood`, which we don't need because we are using a fixed phylogeny. What we consider the `likelihood` in our analysis is instead how well the model parameters fit our phylogeny, so this time we will cut and paste our model into this part of the XML.
+As before, the last part of the `distribution` block is labelled the `likelihood`, and contains the `treeLikelihood`, which we don't need because we are using a fixed phylogeny. What we consider the `likelihood` in our analysis is instead how well the model parameters fit our phylogeny, so this time we will cut and paste our fossilized-birth-death model into this part of the XML.
 
 >Remove the `treeLikelihood` block from the `likelihood` part of the XML:
 >
@@ -601,7 +609,7 @@ As before, the last part of the `distribution` block is labelled the `likelihood
 >            </distribution>
 > </distribution>
 
-We now see the **operators**. As for the exponential coalescent model, we will remove the operators related to tree construction, which we don't need.
+The next part of the XML file sets the **operators**. As for the exponential coalescent model, we will remove the operators related to tree construction, which we don't need.
 		
 >Remove the tree operators:
 >
@@ -615,7 +623,7 @@ We now see the **operators**. As for the exponential coalescent model, we will r
 > <operator id="BDSKY_contemp_bds_WilsonBalding.t:empty" spec="WilsonBalding" tree="@Tree.t:empty" weight="3.0"/>
 >```
 		
-The next three operators are all labelled `ScaleOperator`, and when fired, scale the values of our `death`, `sampling` and `birth` rates respectively. As before, you can see a `weight` specified, defining how often these operators fire relative to each other. As all three of these rates are important to us, and we want to ensure that we have explored their parameter space equally, we will make their weights equal.
+The next three operators are all labelled `ScaleOperator`, and when fired, scale the values of our `death`, `sampling` and `birth` rates, respectively. As before, you can see a `weight` specified, defining how often these operators fire relative to each other. As all three of these rates are important to us, and we want to ensure that we have explored their parameter space equally, we will make their weights equal.
 	
 >Change the `weight` of the `deathRateScaler`, `samplingScaler`, and `birthRateScaler` to 10.0.
 		
@@ -623,7 +631,9 @@ One thing we are currently missing is a `ScaleOperator` for our additional param
 		
 >Add an `originScaler` to the `operator` block:
 >
->`<operator id="BDSKY_contemp_bds_originScaler.t:empty" spec="ScaleOperator" parameter="@origin.t:empty" weight="3.0"/>`
+>```xml
+> <operator id="BDSKY_contemp_bds_originScaler.t:empty" spec="ScaleOperator" parameter="@origin.t:empty" weight="3.0"/>
+>```
 		
 These operators are currently set to scale each of the **dimensions** in our rate vectors individually, but we can also add operators which scale all of the dimensions in our vectors in concert. This could prove useful in quickly determining the typical size of our rates. This can be done by setting `scaleAll="true"` in additional `ScaleOperators`. 
 		
@@ -635,7 +645,7 @@ These operators are currently set to scale each of the **dimensions** in our rat
 > <operator id="BDSKY_contemp_bds_birthRateScalerAll.t:empty" spec="ScaleOperator" parameter="@birthRateBDS.t:empty" scaleAll="true" weight="10.0"/>
 >```
 		
-Beneath the `ScaleOperators` you can see one more operator, an `UpDownOperator`. It has `up` and `down` arguments, which are specified as our `birth` and `death` rates respectively. As currently defined, when this operator fires, it increases the birth rate and decreases the death rate. This operator can be very useful in cases where we expect two of our parameters to be correlated with one another, as speciation and extinction rates often are {% cite HenaoDiaz2019 --file Tutorial-Template/master-refs.bib %}. However, the current parameterisation places a negative directionality on this relationship, whereas we would actually expect higher speciation rates to be matched by higher extinction rates. Instead, we are going to raise our birth and death rates in concert, and instead decrease our sampling rate. We will also increase the weight of this operator to match that of our `scaleOperators`.
+Beneath the `ScaleOperators` you can see one more operator, an `UpDownOperator`. It has `up` and `down` arguments, which are specified as our `birth` and `death` rates respectively. As currently defined, when this operator fires, it increases the birth rate and decreases the death rate. This operator can be very useful in cases where we expect two of our parameters to be correlated with one another, as speciation and extinction rates often are {% cite HenaoDiaz2019 --file Skyline-analyses-for-macroevolution/master-refs.bib %}. However, the current parameterisation places a negative directionality on this relationship, whereas we would actually expect higher speciation rates to be matched by higher extinction rates. Instead, we are going to raise our birth and death rates in concert, and instead decrease our sampling rate. We will also increase the weight of this operator to match that of our `scaleOperators`.
 		
 >Change the `UpDownOperator` parameterisation from:
 >
@@ -671,11 +681,11 @@ We also need to remove parameters from the `tracelog` and `screenlog` that no lo
 		
 >Remove the `treeLikelihood` and `TreeHeight` parameters from the `tracelog`, and add `<log idref="origin.t:empty"/>`. 
 		
-Our XML is finally ready!
+Our XML file is finally ready!
 
 >**Save** all changes to your XML file and close it.
 
-We can now run the analysis in BEAST2. As with the exponential coalescent model, it's important to have `Lloyd.tree` saved somewhere that BEAST2 can access it (check back to the instructions for the running the **exponential coalescent** XML if you skipped this).
+We can now run the analysis in BEAST2. As with the exponential coalescent model, it's important to have `Lloyd.tree` saved somewhere that BEAST2 can access it (check back to the instructions for running the **exponential coalescent** XML if you skipped this).
 
 >Open the program and select `dinosaur_BDSKY.xml` (or `dinosaur_BDSKY_final.xml` if you're using our ready-made version). If you have **BEAGLE** installed tick the box to **Use BEAGLE library if available**, which will make the run faster. Hit **Run** to start the analysis.
 >
@@ -685,7 +695,8 @@ We can now run the analysis in BEAST2. As with the exponential coalescent model,
 
 The analysis should take about 15 minutes to run.
 
-##Visualising the results
+
+## Visualising the results
 
 Once the BEAST2 analyses have finished running, we will use **R** to plot our skylines. The log files are relatively easy to handle in R, so we have provided custom code for this rather than using an R package, although this code does require the **tidyverse** to be installed (specifically, we will use **dplyr** and **ggplot2**).
 
@@ -697,9 +708,9 @@ install.packages("tidyverse")
 library(tidyverse)
 ```
 
-###The Exponential Coalescent model results
+### The Exponential Coalescent model results
 
-First we will take a look at our **exponential coalescent** skyline. The log file from this analysis needs to be read into R, either with or without setting the working directory (the location where R will look for your files). We will also immediately trim the log to remove the first 10% of iterations as burn-in.
+First we will take a look at our **exponential coalescent** skyline. The log file from this analysis needs to be read into R, either with or without setting the working directory (the location where R will look for your files). We will also immediately trim the log file to remove the first 10% of iterations as burn-in.
 
 ```R
 # Navigate to Session > Set Working Directory > Choose Directory (on RStudio)
@@ -711,7 +722,7 @@ coal_file <- "dinosaur_coal.log"
 coalescent <- read.table(coal_file, header = T) %>% slice_tail(prop = 0.9)
 ```
 
-The next job is to summarise the values across the remaining iterations in the log. We will pivot the table so that our diversification rate estimates sit in a single column, then estimate our median and 95% **highest posterior density** (HPD; Bayesian "confidence intervals") values within each time bin.
+The next job is to summarise the values across the remaining iterations in the log. We will pivot the table so that our diversification rate estimates sit in a single column, then estimate our median and 95% **highest posterior density** (HPD interval; a Bayesian analogue to a confidence interval) values within each time bin.
 
 ```R
 #Pivot the table to stack the rate estimates into a single column
@@ -741,7 +752,7 @@ coalescent_summary$interval <- factor(coalescent_summary$interval,
                                                  "Late Cretaceous"))
 ```
 
-We can plot our skylines as error bars, with a discrete bar showing the range of estimated diversification rates in each time interval.
+We can plot our skyline as error bars, with a discrete bar showing the range of estimated diversification rates in each time interval.
 
 ```R
 #Plot diversification skyline as error bars
@@ -759,10 +770,10 @@ ggplot(data = coalescent_summary, aes(x = interval, y = median, ymin = lowCI,
 <figure>
 	<a id="fig:7"></a>
 	<img style="width:50%;" src="figures/Coalescent_errors.png" alt="">
-	<figcaption>Figure 7: The exponential coalescent diversification skyline plotted using error bars.</figcaption>
+	<figcaption>Figure 7: The exponential coalescent diversification rate skyline plotted using error bars.</figcaption>
 </figure>
  
-Alternatively, we can plot the skylines as continuous by extending our estimates across the temporal duration of each time interval, in a **piecewise constant** skyline.
+Alternatively, by extending our estimates across the temporal duration of each time interval, we can plot the diversification rate over time as a **piecewise constant** skyline.
 
 ```R
 #Plot diversification skyline as a ribbon plot
@@ -787,10 +798,10 @@ ggplot(to_plot) +
 <figure>
 	<a id="fig:8"></a>
 	<img style="width:50%;" src="figures/Coalescent_ribbon.png" alt="">
-	<figcaption>Figure 8: The exponential coalescent diversification skyline plotted using a ribbon plot.</figcaption>
+	<figcaption>Figure 8: The exponential coalescent diversification rate skyline plotted using a ribbon plot.</figcaption>
 </figure>
  
-We can also investigate the other parameter estimated in the model, the estimated **effective population size** at the start of the coalescent process (which is the youngest end of the time interval). For us, this corresponds to an estimate of the **total species diversity** of non-avian dinosaurs just before the Cretaceous-Paleogene boundary. Again, we can estimate the median and 95% HPD values for our diversity estimates.
+We can also investigate the other parameter estimated in the model, the estimated **effective population size** at the start of the coalescent process (which is the youngest end of the time interval). We can use this estimate as a measure of the **total species diversity** of non-avian dinosaurs just before the Cretaceous-Paleogene boundary. Again, we can estimate the median and 95% HPD values for our diversity estimates.
 
 ```R
 #Extract estimated diversity
@@ -806,12 +817,10 @@ print(pop_data)
 <figure>
 	<a id="fig:9"></a>
 	<img style="width:25%;" src="figures/Coalescent pop table.png" alt="">
-	<figcaption>Figure 9: The estimated number of dinosaur species alive just before the Cretaceous-Paleogene boundary.</figcaption>
+	<figcaption>Figure 9: The estimated effective population size of the dinosaur clade just before the Cretaceous-Paleogene boundary.</figcaption>
 </figure>
-	
-Our coalescent model therefore suggests that between 380 and 950 dinosaur species became extinct during the end-Cretaceous mass extinction.
 
-###The Fossilised-Birth-Death model results
+### The Fossilised-Birth-Death model results
 
 We can now examine the results of our **fossilised-birth-death** model. Again, we need to read in the relevant log file and trim off the first 10% as burn-in.
 
@@ -825,7 +834,7 @@ fbd_file <- "dinosaur_BDSKY.log"
 fbd <- read.table(fbd_file, header = T) %>% slice_tail(prop = 0.9)
 ```
 
-We parameterised this model using **birth**, **death** and **fossil sampling** rates, so these are the parameters included in our log. However, our exponential coalescent model estimated **diversification** rates. If we want to make the fairest comparison between the two models, we should do so using the same parameters. Fortunately, it is very straightforward to convert birth and death rates into diversification rates: simply, {% eqinline diversification = births - deaths %}. We can also calculate **turnover**, which describes the average duration of lineages (species) in our clade. Turnover is the ratio between births and deaths, so we will calculate it using {% eqinline turnover = births / deaths %}.
+We parameterised this model using **birth**, **death** and **fossil sampling** rates, so these are the parameters included in our log. However, our exponential coalescent model estimated **diversification** rates. If we want to make the fairest comparison between the two models, we should do so using the same parameters. Fortunately, it is straightforward to convert birth and death rates into diversification rates: simply, {% eqinline \textrm{diversification} = \mathrm{births} - \mathrm{deaths} %}. We can also calculate **turnover**, which describes the average duration of lineages (species) in our clade. Turnover is the ratio between births and deaths, so we will calculate it using {% eqinline \textrm{turnover} = \frac{\mathrm{births} }{ \mathrm{deaths}} %}.
 
 ```R
 #Calculate diversification and turnover
@@ -841,7 +850,7 @@ colnames(TO_rates) <- paste0("TORate.",
                              seq(1:ncol(TO_rates)))
 ```
 
-We can then calculate the median and 95% HPD values for our diversification and turnover estimates, just as we did before. This time, note that because the birth-death model runs from the origin forwards in time, our "first" time bin is the oldest and our "fourth" time bin is the youngest.
+We can then calculate the median and 95% HPD values for our diversification and turnover estimates, just as we did before. This time, note that because the birth-death model runs from the origin forward-in-time, our "first" time bin is the oldest and our "fourth" time bin is the youngest. Even though we flipped the time direction of the break point times when setting up the XML file (using the `reverseTimeArrays` vector to change the direction of `birthRateChangeTimes` etc.), this has no effect on the order in which time bins are logged in the log file, where time is always assumed to run forwards, from the oldest to the youngest bin.
 
 ```R
 #Pivot the table to stack the rate estimates into a single column
@@ -949,7 +958,7 @@ ggplot(data = samp_data, aes(x = interval, y = median, ymin = lowCI,
 <figure>
 	<a id="fig:10"></a>
 	<img style="width:50%;" src="figures/FBD errors.png" alt="">
-	<figcaption>Figure 10: The fossilsed-birth-death diversification skyline plotted using error bars.</figcaption>
+	<figcaption>Figure 10: The fossilsed-birth-death diversification rate skyline plotted using error bars.</figcaption>
 </figure>
 
 ...but also as **piecewise constant** skylines using ribbon plots.
@@ -997,10 +1006,10 @@ ggplot(samp_plot) +
 <figure>
 	<a id="fig:11"></a>
 	<img style="width:50%;" src="figures/FBD ribbon.png" alt="">
-	<figcaption>Figure 11: The fossilsed-birth-death diversification skyline plotted using a ribbon plot.</figcaption>
+	<figcaption>Figure 11: The fossilsed-birth-death diversification rate skyline plotted using a ribbon plot.</figcaption>
 </figure>
 
-We can also examine the last parameter in our fossilised-birth-death model, which is the **origin** of our clade, dinosaurs. Note that we add 66 to our estimates to account for the difference between the youngest tip (at the Cretaceous-Paleogene boundary) and the present day.
+We can also examine the last parameter in our fossilised-birth-death model, which is the **origin** of our clade, the dinosaurs. Note that we add 66 to our estimates to account for the difference between the youngest tip (at the Cretaceous-Paleogene boundary) and the present day. If we didn't add 66 to our estimates we would be estimating the duration of non-avian dinosaurs on Earth, instead of the time of their origin. 
 
 ```R
 #Extract origin data
@@ -1017,12 +1026,12 @@ print(origin_data)
 <figure>
 	<a id="fig:12"></a>
 	<img style="width:25%;" src="figures/FBD origin table.png" alt="">
-	<figcaption>Figure 12: The estimated duration of the non-avian dinosaurs.</figcaption>
+	<figcaption>Figure 12: The estimated origin of dinosaurs (in Ma).</figcaption>
 </figure>
 	
 Our fossilised-birth-death model therefore suggests that dinosaurs originated around 246Ma, which would be during the Middle Triassic. 
 
-###Model comparison
+### Model comparison
 
 If we compare the skylines generated using our exponential coalescent and fossilised-birth-death models, we can see that they do not reconstruct the same diversification trajectory for dinosaurs across their evolutionary history. The exponential coalescent model indicates that the dinosaurs were experiencing negative diversification (net loss of species) during the Late Cretaceous, even prior to their total extinction at the Cretaceous-Paleogene boundary. In contrast, the fossilised-birth-death model suggests that the dinosaurs may have been in decline in the Early Cretaceous, but had returned to net diversification by the Late Cretaceous. One possible reason for this is that the fossilised-birth-death model includes fossil sampling rate as a parameter, whereas the exponential coalescent model simply assumes that there is no relationship between the sampling process and species richness, which may not be the case. Understanding the assumptions of the models we apply, and how well these assumptions fit our data, is therefore essential in Bayesian phylodynamics.
 
@@ -1030,7 +1039,7 @@ If we compare the skylines generated using our exponential coalescent and fossil
 
 # Useful Links
 
-- [Bayesian Evolutionary Analysis with BEAST 2](http://www.beast2.org/book.html) {% cite BEAST2book2014 --file Tutorial-Template/master-refs.bib %}
+- [Bayesian Evolutionary Analysis with BEAST 2](http://www.beast2.org/book.html) {% cite BEAST2book2014 --file Skyline-analyses-for-macroevolution/master-refs.bib %}
 - BEAST 2 website and documentation: [http://www.beast2.org/](http://www.beast2.org/)
 - BEAST 1 website and documentation: [http://beast.bio.ed.ac.uk](http://beast.bio.ed.ac.uk)
 - Join the BEAST user discussion: [http://groups.google.com/group/beast-users](http://groups.google.com/group/beast-users) 
@@ -1039,10 +1048,10 @@ If we compare the skylines generated using our exponential coalescent and fossil
 
 # Relevant References
 
-{% bibliography --cited --file Tutorial-Template/master-refs.bib %}
+{% bibliography --cited --file Skyline-analyses-for-macroevolution/master-refs.bib %}
 
 ----
 
 # Citation
 
-If this tutorial has been useful to you, please consider citing {% cite Allen2023 --file Tutorial-Template/master-refs.bib %}, from which these analyses are taken.
+If this tutorial has been useful to you, please consider citing {% cite Allen2023 --file Skyline-analyses-for-macroevolution/master-refs.bib %}, from which these analyses are taken.
