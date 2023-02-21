@@ -850,7 +850,7 @@ colnames(TO_rates) <- paste0("TORate.",
                              seq(1:ncol(TO_rates)))
 ```
 
-We can then calculate the median and 95% HPD values for our diversification and turnover estimates, just as we did before. This time, note that because the birth-death model runs from the origin forward-in-time, our "first" time bin is the oldest and our "fourth" time bin is the youngest. Even though we flipped the time direction of the break point times when setting up the XML file (using the `reverseTimeArrays` vector to change the direction of `birthRateChangeTimes` etc.), this has no effect on the order in which time bins are logged in the log file, where time is always assumed to run forwards, from the oldest to the youngest bin.
+We can then calculate the median and 95% HPD values for our diversification and turnover estimates, just as we did before. This time, note that because the birth-death model runs from the origin forward-in-time, our "first" time bin is the oldest and our "fourth" time bin is the youngest. Even though we flipped the time direction of the break point times when setting up the XML file (using the `reverseTimeArrays` vector to change the direction of `birthRateChangeTimes` etc.), this has no effect on the order in which time bins are logged in the log file.
 
 ```R
 #Pivot the table to stack the rate estimates into a single column
