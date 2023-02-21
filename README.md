@@ -99,7 +99,7 @@ Most of the default tabs in BEAUti relate to inferring the phylogeny, which we w
 	<figcaption>Figure 3: The priors tab with a Coalescent Exponential Population tree prior.</figcaption>
 </figure>
 
-Here we see that the model has two parameters, `ePopSize` and `growthRate`. `ePopSize` refers to the **effective population size** at the start of the coalescent process. Because coalescent models consider time from the present backwards (see **Skyline plots** tutorial), this therefore refers to the size of the population at the end of our youngest time interval. The tips in our phylogeny are species, and so in this context, our effective population size can be considered to be a measure of the **total species richness**. Our `growthRate` is simply our **diversification rate**.
+Here we see that the model has two parameters, `ePopSize` and `growthRate`. Our `growthRate` is simply our **diversification rate**. `ePopSize` refers to the **effective population size** at the start of the coalescent process. Because coalescent models consider time from the present backwards, this therefore refers to the size of the population at the end of our youngest time interval. The tips in our phylogeny are species, and so in this context, our effective population size can be considered to be a measure of the **total species richness**. Strictly speaking, it is an estimate of the number of species in the clade at the start of the coalescent process, under the assumption that these species act as a Wright-Fisher population (see [**Skyline plots**](../Skyline-plots/) tutorial). As this assumption is very likely violated, this value should be interpreted with caution in a macroevolutionary context.
 
 We actually only need the population size prior, and will remove the growth rate prior later. The default `ePopSize` prior is a 1/X (or `OneOnX`), which is a good choice when you have little knowledge about what the shape of your prior should be, placing reduced probability on higher values. We will keep the shape of this prior as the default, but change the initialisation values (the value of the parameters in their first iteration of the chain). We will set the starting `ePopSize` to 1, and the initial `growthRate` estimate to 0.
 
@@ -801,7 +801,7 @@ ggplot(to_plot) +
 	<figcaption>Figure 8: The exponential coalescent diversification rate skyline plotted using a ribbon plot.</figcaption>
 </figure>
  
-We can also investigate the other parameter estimated in the model, the estimated **effective population size** at the start of the coalescent process (which is the youngest end of the time interval). We can use this estimate as a measure of the **total species diversity** of non-avian dinosaurs just before the Cretaceous-Paleogene boundary. Again, we can estimate the median and 95% HPD values for our diversity estimates.
+We can also investigate the other parameter estimated in the model, the estimated **effective population size** at the start of the coalescent process (which is the youngest end of the time interval). We can use this estimate as a measure of the **total species diversity** of non-avian dinosaurs just before the Cretaceous-Paleogene boundary (although, as mentioned before, with a pinch of salt). Again, we can calculate the median and 95% HPD values for our diversity estimates.
 
 ```R
 #Extract estimated diversity
