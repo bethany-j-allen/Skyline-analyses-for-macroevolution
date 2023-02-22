@@ -501,8 +501,8 @@ The first of these settings is determined using the `conditionOnRoot` parameter.
 
 <figure>
 	<a id="fig:a"></a>
-	<img style="width:50%;" src="figures/Conditioning schematic.png" alt="">
-	<figcaption>Figure a: A schematic showing the difference between conditioning on the root and conditioning on the origin. This setting determines whether the evolutionary process commemces at the start of the initial branch, or the first observed speciation event. </figcaption>
+	<img style="width:75%;" src="figures/Conditioning schematic.png" alt="">
+	<figcaption>Figure a: A schematic showing the difference between conditioning on the root and conditioning on the origin. This setting determines whether the evolutionary process commences at the start of the initial branch, or the first observed speciation event. </figcaption>
 </figure>
 		
 The second way to condition our BDSKY model is to ensure that the model produces at least one sample (is observable). Depending on the relevant type of sampling, we can either use `conditionOnRhoSampling` or `conditionOnSurvival`: the former assumes at least one extant sample, while the latter assumes at least one sample of either type (an extant sample or an observed fossil). It's worth noting that when `conditionOnRoot="true"`, the model assumes that our samples are drawn from both sides of the root, and therefore that the MRCA in the sampled tree corresponds to the MRCA in the "true" tree. As our phylogeny of non-avian dinosaurs only includes extinct species, we will set `conditionOnRhoSampling="false"` and `conditionOnSurvival="true"`.
