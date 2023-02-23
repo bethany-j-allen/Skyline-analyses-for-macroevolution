@@ -389,7 +389,7 @@ We can now run the analysis in BEAST2. It's important to have `Lloyd.tree` saved
 >
 >Download and save `Lloyd.tree` in the folder containing your XML file. Find the BEAST2 executable in **BEAST_2.X.X** (depending on your version) **> bin**. Right-click on the **beast** executable and select **Create shortcut** on Windows or **Make alias** on Mac. Cut and paste the created shortcut/alias into the folder containing your analysis files. If you open your **terminal** and navigate to the folder containing your files, you should now be able to run the analysis through the terminal using `beast dinosaur_coal.xml` (or `beast dinosaur_coal_final.xml` if you're using our ready-made version).
 
-The analysis should take about 15 minutes to run. In the meantime, you can start setting up the fossilised-birth-death analysis.
+The analysis should take about 5 minutes to run. In the meantime, you can start setting up the fossilised-birth-death analysis.
 
 ## Setting up the Fossilised-Birth-Death Skyline analysis
 
