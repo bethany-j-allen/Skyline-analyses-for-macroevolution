@@ -101,9 +101,15 @@ Most of the default tabs in BEAUti relate to inferring the phylogeny, which we w
 
 Here we see that the model has two parameters, `ePopSize` and `growthRate`. Our `growthRate` is simply our **diversification rate**. `ePopSize` refers to the **effective population size** at the start of the coalescent process. Because coalescent models consider time from the present backwards, this therefore refers to the size of the population at the end of our youngest time interval. The tips in our phylogeny are species, and so in this context, our effective population size can be considered to be a measure of the **total species richness**. Strictly speaking, it is an estimate of the number of species in the clade at the start of the coalescent process, under the assumption that these species act as a Wright-Fisher population (see [**Skyline plots**](../Skyline-plots/) tutorial). As this assumption is very likely violated, this value should be interpreted with caution in a macroevolutionary context.
 
-We actually only need the population size prior, and will remove the growth rate prior later. The default `ePopSize` prior is a 1/X (or `OneOnX`), which is a good choice when you have little knowledge about what the shape of your prior should be, placing reduced probability on higher values. We will keep the shape of this prior as the default, but change the initialisation values (the value of the parameters in their first iteration of the chain). We will set the starting `ePopSize` to 1, and the initial `growthRate` estimate to 0.
+The default `ePopSize` prior is a 1/X distribution (or `OneOnX`), which is a reasonable choice when you have little knowledge about what the shape of your prior should be, placing reduced probability on higher values. However, it is not "proper"; a **proper prior** is one which is bounded, and therefore has an area under the curve equal to 1, which should ideally be the case when defining probability distributions. To meet this requirement, we will use a similarly shaped, but proper, **lognormal distribution**, with the default parameter values. We will also change the initialisation value (the value of the parameter in the first iteration of the chain) to 1.
 
+>Change the `ePopSize` prior to **Log Normal**, checking that `M` is `1.0` and `S` is `1.25`.
+>
 >Click on the **initial =** button for `ePopSize` and change the **initialisation value** to 1.0.
+
+The default `growthRate` prior is a Laplace distribution, but we will instead use a **normal distribution**, with diversification limits dictated by the magnitude of those estimated from living animals and plants {% cite HenaoDiaz2019 --file Skyline-analyses-for-macroevolution/master-refs.bib %}. We will also set the initial `growthRate` estimate to 0.
+
+>Change the `growthRate` prior to **Normal**, keeping the `mean` at `0.0` but changing `sigma` to `0.5`.
 >
 >Click on the **initial =** button for `growthRate` and change the **initialisation value** to 0.0.
 
