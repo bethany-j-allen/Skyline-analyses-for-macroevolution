@@ -268,7 +268,7 @@ In the next few lines of our XML we can see that the shape of our prior distribu
 
 >To tidy up, cut the `<distribution id="prior" spec="util.CompoundDistribution">` line from above the model block and paste it below this block (immediately above the `ePopSize` prior).
 >
->Copy and paste the `GrowthRatePrior` block three times, immediately below the first. Change the ` prior id` and `x` names to correspond to each of the four `growthRate` parameters. Renumber the `parameter id` names so that each parameter has a different `id`.
+>Copy and paste the `GrowthRatePrior` block three times, immediately below the first. Change the ` prior id` and `x` names to correspond to each of the four `growthRate` parameters. Renumber the `Normal id` and `parameter id` names so that each parameter has a different `id`.
 
 The priors block should now look like this:
 
@@ -289,21 +289,21 @@ The priors block should now look like this:
 >            </prior>
 >
 >            <prior id="GrowthRatePrior2" name="distribution" x="@growthRate2">
->                <Normal id="Normal.1" name="distr">
+>                <Normal id="Normal.2" name="distr">
 >                    <parameter id="RealParameter.3" spec="parameter.RealParameter" estimate="false" name="mean">0.0</parameter>
 >                    <parameter id="RealParameter.4" spec="parameter.RealParameter" estimate="false" name="sigma">0.5</parameter>
 >                </Normal>
 >            </prior>
 >
 >            <prior id="GrowthRatePrior3" name="distribution" x="@growthRate3">
->                <Normal id="Normal.1" name="distr">
+>                <Normal id="Normal.3" name="distr">
 >                    <parameter id="RealParameter.5" spec="parameter.RealParameter" estimate="false" name="mean">0.0</parameter>
 >                    <parameter id="RealParameter.6" spec="parameter.RealParameter" estimate="false" name="sigma">0.5</parameter>
 >                </Normal>
 >            </prior>
 >
 >            <prior id="GrowthRatePrior4" name="distribution" x="@growthRate4">
->                <Normal id="Normal.1" name="distr">
+>                <Normal id="Normal.4" name="distr">
 >                    <parameter id="RealParameter.7" spec="parameter.RealParameter" estimate="false" name="mean">0.0</parameter>
 >                    <parameter id="RealParameter.8" spec="parameter.RealParameter" estimate="false" name="sigma">0.5</parameter>
 >                </Normal>
