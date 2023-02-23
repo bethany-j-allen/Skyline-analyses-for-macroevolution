@@ -375,7 +375,7 @@ And finally we reach the last block of the XML, which determines the **logs** ou
 
 We also need to remove parameters from the `tracelog` and `screenlog` that no longer exist in our XML, and ensure that we are logging all four of our `growthRate` parameters.
 		
->Remove the `treeLikelihood`, `TreeHeight`, and `CoalescentExponential` parameters from the `tracelog`. Copy and paste <log idref="growthRate.t:empty"/> three times, changing the `idref` to `growthRate1`, `growthRate2`, `growthRate3`, and `growthRate4`.
+>Remove the `treeLikelihood`, `TreeHeight`, and `CoalescentExponential` parameters from the `tracelog`. Copy and paste `<log idref="growthRate.t:empty"/>` three times, changing the `idref` to `growthRate1`, `growthRate2`, `growthRate3`, and `growthRate4`.
 		
 With that, our XML is ready!
 
