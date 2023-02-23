@@ -264,16 +264,51 @@ The model block should now look like this:
 </distribution>
 ```
 	
-In the next few lines of our XML we can see that the shape of our prior distributions are defined. As mentioned before, we will keep the prior for `ePopSize` as the default 1/X. However, we are defining the shape of our `growthRate` parameters within our model so we can remove this prior from the XML.
+In the next few lines of our XML we can see that the shape of our prior distributions are defined. Our prior for `ePopSize` needs no further intervention beyond the settings we inputted into BEAUti. However, we only have a single `GrowthRatePrior`, but we now have four `growthRate` parameters, one for each of our time intervals. We need to copy and paste this prior three times, linking each prior to the diversification rate in one of those time intervals.
 
 >To tidy up, cut the `<distribution id="prior" spec="util.CompoundDistribution">` line from above the model block and paste it below this block (immediately above the `ePopSize` prior).
 >
->Remove the `growthRate` prior:
->
+>Copy and paste the `GrowthRatePrior` block three times, immediately below the first. Change the ` prior id` and `x` names to correspond to each of the four `growthRate` parameters. Renumber the `parameter id` names so that each parameter has a different `id`.
+
+The priors block should now look like this:
+
 >```xml
-> <prior id="GrowthRatePrior.t:empty" name="distribution" x="@growthRate.t:empty">
->                <OneOnX id="OneOnX.3" name="distr"/>
-> </prior>
+> 	   <distribution id="prior" spec="util.CompoundDistribution">
+>            <prior id="ePopSizePrior.t:empty" name="distribution" x="@ePopSize.t:empty">
+>                <LogNormal id="LogNormalDistributionModel.1" name="distr">
+>                    <parameter id="RealParameter.11" spec="parameter.RealParameter" estimate="false" name="M">1.0</parameter>
+>                    <parameter id="RealParameter.12" spec="parameter.RealParameter" estimate="false" lower="0.0" name="S" upper="5.0">1.25</parameter>
+>                </LogNormal>
+>            </prior>
+>
+>            <prior id="GrowthRatePrior1" name="distribution" x="@growthRate1">
+>                <Normal id="Normal.1" name="distr">
+>                    <parameter id="RealParameter.1" spec="parameter.RealParameter" estimate="false" name="mean">0.0</parameter>
+>                    <parameter id="RealParameter.2" spec="parameter.RealParameter" estimate="false" name="sigma">0.5</parameter>
+>                </Normal>
+>            </prior>
+>
+>            <prior id="GrowthRatePrior2" name="distribution" x="@growthRate2">
+>                <Normal id="Normal.1" name="distr">
+>                    <parameter id="RealParameter.3" spec="parameter.RealParameter" estimate="false" name="mean">0.0</parameter>
+>                    <parameter id="RealParameter.4" spec="parameter.RealParameter" estimate="false" name="sigma">0.5</parameter>
+>                </Normal>
+>            </prior>
+>
+>            <prior id="GrowthRatePrior3" name="distribution" x="@growthRate3">
+>                <Normal id="Normal.1" name="distr">
+>                    <parameter id="RealParameter.5" spec="parameter.RealParameter" estimate="false" name="mean">0.0</parameter>
+>                    <parameter id="RealParameter.6" spec="parameter.RealParameter" estimate="false" name="sigma">0.5</parameter>
+>                </Normal>
+>            </prior>
+>
+>            <prior id="GrowthRatePrior4" name="distribution" x="@growthRate4">
+>                <Normal id="Normal.1" name="distr">
+>                    <parameter id="RealParameter.7" spec="parameter.RealParameter" estimate="false" name="mean">0.0</parameter>
+>                    <parameter id="RealParameter.8" spec="parameter.RealParameter" estimate="false" name="sigma">0.5</parameter>
+>                </Normal>
+>            </prior>
+>        </distribution>
 >```
 
 The last part of the `distribution` block is labelled the `likelihood`, and contains the `treeLikelihood`, which determines how well the inferred tree fits the sequences or morphological data. As we are using a fixed phylogeny and don't have any other input data, we can remove this from our XML (we have already renamed our model the `likelihood` anyway).
