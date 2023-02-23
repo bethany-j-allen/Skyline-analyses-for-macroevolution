@@ -743,11 +743,18 @@ We can now run the analysis in BEAST2. As with the exponential coalescent model,
 >Ensure your XML file and `Lloyd.tree` are saved in the same folder, which also contains the BEAST2 shortcut/alias you created earlier. Open your **terminal** and navigate to the folder containing your files, then run the analysis through the terminal using `beast dinosaur_BDSKY.xml` (or `beast dinosaur_BDSKY_final.xml` if you're using our ready-made version).
 
 The analysis should take about 15 minutes to run.
-
-
+		
+## Checking the logs and assessing convergence
+		
+Once the BEAST2 analyses have finished running, it is good practice to check the logs, particularly to determine whether the analyses have **converged** and to verify that there is no abnormal behaviour in the traces. The easiest way to do this is to load your logs into **Tracer**.
+		
+>Open **Tracer** and load both `dinosaur_coal.log` and `dinosaur_BDSKY.log`.
+		
+Next to the file names, you can see the number of states in the logs (the length of the MCMC chain), and the burn-in which has been applied (the default is the first 10%). Beneath this is a list of the parameters which are stored in the log. You can select each one to examine the characteristics of that specific parameter. Alongside the parameter names are their `mean` and `ESS` values. `ESS` stands for **effective sample size**, and is a metric commonly used to determine whether a Bayesian analysis has converged. Values over 200 are typically taken to denote convergence; if any of the parameter values are below this, then the chain should be run for more iterations prior to analysis of the results. A quick glance at our two files shows that our coalescent analysis has already converged, but that our BDSKY analysis has not. You can (and should) also confirm this visually: select any parameter which has an ESS over 200, then click the `Trace` button at the top of the window, and you should see the characteristic "caterpillar" of a well-mixed chain, but select any parameter with an ESS below this value, and the trace will appear more undulating. In the interests of time, we will analyse our logs as they are, but ideally the BDSKY analysis should be run until convergence.
+		
 ## Visualising the results
 
-Once the BEAST2 analyses have finished running, we will use **R** to plot our skylines. The log files are relatively easy to handle in R, so we have provided custom code for this rather than using an R package, although this code does require the **tidyverse** to be installed (specifically, we will use **dplyr** and **ggplot2**).
+We can now use **R** to plot our skylines. The log files are relatively easy to handle in R, so we have provided custom code for this rather than using an R package, although this code does require the **tidyverse** to be installed (specifically, we will use **dplyr** and **ggplot2**).
 
 The first step is to install the `tidyverse` if you haven't previously, and then to load the package.
 
