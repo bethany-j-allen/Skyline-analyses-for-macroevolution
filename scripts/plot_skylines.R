@@ -98,10 +98,6 @@ div_rates <- birth_rates - death_rates
 colnames(div_rates) <- paste0("divRate.",
                               seq(1:ncol(div_rates)))
 
-TO_rates <- birth_rates / death_rates
-colnames(TO_rates) <- paste0("TORate.",
-                             seq(1:ncol(TO_rates)))
-
 #Tell coda that this is an mcmc file, and calculate 95% HPD values
 div_mcmc <- as.mcmc(div_rates)
 div_data <- as.data.frame(HPDinterval(div_mcmc))
@@ -112,17 +108,6 @@ div_data$median <- apply(div_rates, 2, median)
 #Add interval names
 div_data$interval <- c("Triassic", "Jurassic", "Early Cretaceous",
                        "Late Cretaceous")
-
-#Tell coda that this is an mcmc file, and calculate 95% HPD values
-turn_mcmc <- as.mcmc(TO_rates)
-turn_data <- as.data.frame(HPDinterval(turn_mcmc))
-
-#Add median values to data frame
-turn_data$median <- apply(TO_rates, 2, median)
-
-#Add interval names
-turn_data$interval <- c("Triassic", "Jurassic", "Early Cretaceous",
-                        "Late Cretaceous")
 
 #Select sampling estimates from log
 samp_log <- select(fbd, starts_with("samplingBDS"))
@@ -143,10 +128,6 @@ div_data$interval <- factor(div_data$interval,
                             levels = c("Triassic", "Jurassic",
                                        "Early Cretaceous", "Late Cretaceous"))
 
-turn_data$interval <- factor(turn_data$interval,
-                             levels = c("Triassic", "Jurassic",
-                                        "Early Cretaceous", "Late Cretaceous"))
-
 samp_data$interval <- factor(samp_data$interval,
                              levels = c("Triassic", "Jurassic",
                                         "Early Cretaceous", "Late Cretaceous"))
@@ -160,16 +141,6 @@ ggplot(data = div_data, aes(x = interval, y = median, ymin = lower,
   geom_hline(aes(yintercept = 0), colour = "black") +
   scale_x_discrete(labels = function(x) str_wrap(x, width = 10)) +
   labs(x = "Interval", y = "Diversification rate") +
-  theme_classic(base_size = 17)
-
-ggplot(data = turn_data, aes(x = interval, y = median, ymin = lower,
-                            ymax = upper)) +
-  geom_point(size = 1.5) +
-  geom_errorbar(linewidth = 1, width = 0.5) +
-  scale_colour_manual(values = c("black")) +
-  geom_hline(aes(yintercept = 1), colour = "black") +
-  scale_x_discrete(labels = function(x) str_wrap(x, width = 10)) +
-  labs(x = "Interval", y = "Turnover rate") +
   theme_classic(base_size = 17)
 
 ggplot(data = samp_data, aes(x = interval, y = median, ymin = lower,
@@ -198,16 +169,6 @@ ggplot(div_plot) +
   scale_x_reverse() +
   geom_hline(aes(yintercept = 0), colour = "black") +
   xlab("Age (Ma)") + ylab("Diversification rate") +
-  theme_classic(base_size = 17)
-
-turn_plot <- left_join(age_table, turn_data, by = "interval")
-turn_plot$ages <- as.numeric(turn_plot$ages)
-ggplot(turn_plot) +
-  geom_ribbon(aes(x = ages, ymin = lower, ymax = upper), alpha = 0.5) +
-  geom_line(aes(x = ages, y = median)) +
-  scale_x_reverse() +
-  geom_hline(aes(yintercept = 1), colour = "black") +
-  xlab("Age (Ma)") + ylab("Turnover rate") +
   theme_classic(base_size = 17)
 
 samp_plot <- left_join(age_table, samp_data, by = "interval")
