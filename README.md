@@ -10,7 +10,7 @@ tracerversion: 1.7.x
 
 # Background
 
-Bayesian phylodynamics uses the shape of a phylogenetic tree to infer characteristics of the population represented in the phylogeny. Although widely applied to epidemiological datasets, the approach is yet to be used widely in macroevolution. In this case, skyline methods can be used to estimate parameters such as speciation, extinction and sampling rates over time, as well as the total number of lineages (usually species diversity). In this tutorial, we demonstrate how to apply the exponential coalescent and fossilised-birth-death skyline models, which both estimate piecewise-constant evolutionary rates through time, to a dinosaur supertree. The models differ in the temporal direction in which they are applied, and the assumptions they make about how the phylogeny is sampled. We recommend reading the [**Skyline plots**](../Skyline-plots/) tutorial before attempting this one, as it covers a lot of the theory behind the models which we will not repeat here, except to highlight points which are relevant to macroevolutionary datasets.
+Bayesian phylodynamics uses the shape of a phylogenetic tree to infer characteristics of the population represented in the phylogeny. Although widely applied to epidemiological datasets, the approach is yet to be used widely in macroevolution. In this case, skyline methods can be used to estimate parameters such as speciation, extinction and sampling rates over time, as well as the total number of lineages (usually species diversity). In this tutorial, we demonstrate how to apply piecewise exponential growth coalescent and fossilised-birth-death skyline models, which both estimate piecewise-constant evolutionary rates through time, to a dinosaur supertree. The models differ in the temporal direction in which they are applied, and the assumptions they make about how the phylogeny is sampled. We recommend reading the [**Skyline plots**](../Skyline-plots/) tutorial before attempting this one, as it covers a lot of the theory behind the models which we will not repeat here, except to highlight points which are relevant to macroevolutionary datasets.
 
 ----
 
@@ -45,9 +45,9 @@ We will be using R to analyze the outputs of our analyses. RStudio provides a us
 In this tutorial we will estimate diversification rates for dinosaurs using a previously published supertree. The evolutionary history of dinosaurs is somewhat controversial; although non-avian dinosaurs are well agreed to have become extinct as a result of an asteroid impact at the Cretaceous-Paleogene boundary, it has been fiercely debated whether the clade was already in decline prior to this event (e.g. {% cite Brusatte2015 Benson2018 --file Skyline-analyses-for-macroevolution/master-refs.bib %}).
 
 The aim of this tutorial is to:
-- Learn how to set up a skyline analysis using an existing (previously constructed) phylogeny;
+- Learn how to set up a piecewise rate analysis using an existing (previously constructed) phylogeny;
 - Develop skills in XML hacking;
-- Highlight the differences between exponential coalescent and fossilised-birth-death skylines.
+- Highlight the differences between piecewise exponential growth coalescent and fossilised-birth-death skyline models.
 
 ## The data
 
@@ -55,7 +55,7 @@ We will be inferring our skyline parameters using a ready-made phylogeny contain
 
 ## Install BEAST2 packages
 
-The exponential growth coalescent model is included in the BEAST2 core, but we will need to install the **BDSKY** package, which contains the fossilized-birth-death skyline model. We will also need the **feast** package, which will allow us to use a piecewise formulation of the model, and to integrate some more complex features into our analyses. Installation of packages is done using the package manager, which is integrated into BEAUti.
+The piecewise exponential growth coalescent model is included in the BEAST2 core, but we will need to install the **BDSKY** package, which contains the fossilized-birth-death skyline model. We will also need the **feast** package, which will allow us to use a piecewise formulation of the model, and to integrate some more complex features into our analyses. Installation of packages is done using the package manager, which is integrated into BEAUti.
 
 <figure>
 	<a id="fig:1"></a>
@@ -71,9 +71,9 @@ After installing a package, it is on your computer, but BEAUti is unable to load
 
 >Close the **BEAST2 Package Manager** and **_restart_** BEAUti to fully load the **BDSKY** and **feast** packages.
 
-## Setting up the Exponential Coalescent Skyline analysis
+## Setting up the Piecewise Exponential Growth Coalescent analysis
 
-We will start with the simpler of the two models, the **exponential coalescent**. This model is somewhat similar in construction to the **coalescent Bayesian skyline** model used in the **Skyline plots** tutorial, but instead of assuming that the size of the population remains constant during our individual time intervals, we instead assume that they are experiencing **exponential growth or decline** at a constant rate throughout the interval, with instantaneous shifts in the growth rate between intervals. The advantage of using this model is that while the constant coalescent estimates **constant effective population sizes** within each time interval, we instead estimate **diversification rates** for each of the time intervals, which is what we would like to infer for our dinosaurs. Furthermore, whereas the coalescent Bayesian skyline model only allows interval boundaries to coincide with coalescent (or branching) times in the tree, we will use arbitrary time intervals, which will allow us to directly estimate diversification rates during geological intervals of interest. 
+We will start with the simpler of the two models, the **piecewise exponential growth coalescent**. This model is somewhat similar in construction to the **coalescent Bayesian skyline** model used in the **Skyline plots** tutorial, but instead of assuming that the size of the population remains constant during our individual time intervals, we instead assume that they are experiencing **exponential growth or decline** at a constant rate throughout the interval, with instantaneous shifts in the growth rate between intervals. The advantage of using this model is that while the constant coalescent estimates **constant effective population sizes** within each time interval, we instead estimate **diversification rates** for each of the time intervals, which is what we would like to infer for our dinosaurs. Furthermore, whereas the coalescent Bayesian skyline model only allows interval boundaries to coincide with coalescent (or branching) times in the tree, we will use arbitrary time intervals, which will allow us to directly estimate diversification rates during geological intervals of interest. 
 
 Many of the features we will need in our XML files are not currently implemented in BEAUti. However, for both models, we will start our analyses by creating XML files in BEAUti which will then serve as a template for us to alter by hand ("hack") later. 
 
@@ -121,7 +121,7 @@ The default `growthRate` prior is a Laplace distribution, but we will instead us
 
 We will go into much more detail on the contents of this tab later, when setting up our birth-death model.
 
-We can leave the rest of the tabs as they are and save the XML file. We want to shorten the chain length and decrease the sampling frequency so the analysis completes in a reasonable time and the output files stay small. Note that we won't alter the **treelog**, because we won't be using it, as our tree is fixed. (Keep in mind that it will be necessary to run a longer chain for parameters to mix properly and converge.)
+We can leave the rest of the tabs as they are and save the XML file. We want to shorten the chain length and decrease the sampling frequency so the analysis completes in a reasonable time and the output files stay small. Note that we won't alter the **treelog**, because we won't be using it, as our tree is fixed.
 
 >Navigate to the **MCMC** panel.
 >
@@ -393,7 +393,7 @@ The analysis should take about 5 minutes to run. In the meantime, you can start 
 
 ## Setting up the Fossilised-Birth-Death Skyline analysis
 
-As with the exponential coalscent model, many of the features we will need in our XML file are not yet implemented in BEAUti, but we will start our analyses by creating template XML files in BEAUti.
+As with the piecewise exponential growth coalscent model, many of the features we will need in our fossilised-birth-death XML file are not yet implemented in BEAUti, but we will start our analyses by creating template XML files in BEAUti.
 
 ### Creating the Analysis Files with BEAUti
 
@@ -754,7 +754,7 @@ Next to the file names, you can see the number of states in the logs (the length
 
 We can now use **R** to plot our skylines. We will be using **coda** to summarise the log files, and the **tidyverse** (specifically, we will use **dplyr** and **ggplot2**) for wrangling and plotting.
 
-The first step is to install the `tidyverse` and `coda` packages if you haven't previously, and then to load the package.
+The first step is to install the `tidyverse` and `coda` packages if you haven't previously, and then to load the packages.
 
 ```R
 install.packages("tidyverse")
@@ -766,7 +766,7 @@ library(coda)
 
 ### The Exponential Coalescent model results
 
-First we will take a look at our **exponential coalescent** skyline. The log file from this analysis needs to be read into R, either with or without setting the working directory (the location where R will look for your files). We will also immediately trim the log file to remove the first 10% of iterations as burn-in.
+First we will take a look at our **piecewise exponential growth coalescent** skyline. The log file from this analysis needs to be read into R, either with or without setting the working directory (the location where R will look for your files). We will also immediately trim the log file to remove the first 10% of iterations as burn-in.
 
 ```R
 # Navigate to Session > Set Working Directory > Choose Directory (on RStudio)
@@ -825,7 +825,7 @@ ggplot(data = diversification_data, aes(x = interval, y = median, ymin = lower,
 <figure>
 	<a id="fig:8"></a>
 	<img style="width:50%;" src="figures/Coalescent_errors.png" alt="">
-	<figcaption>Figure 8: The exponential coalescent diversification rate skyline plotted using error bars.</figcaption>
+	<figcaption>Figure 8: The piecewise exponential growth coalescent diversification rate skyline plotted using error bars.</figcaption>
 </figure>
  
 Alternatively, by extending our estimates across the temporal duration of each time interval, we can plot the diversification rate over time as a **piecewise constant** skyline.
@@ -1045,7 +1045,7 @@ Our fossilised-birth-death model therefore suggests that dinosaurs originated ar
 
 ### Model comparison
 
-If we compare the skylines generated using our exponential coalescent and fossilised-birth-death models, we can see that they do not reconstruct the same diversification trajectory for dinosaurs across their evolutionary history. The exponential coalescent model indicates that the dinosaurs were experiencing negative diversification (net loss of species) during the Late Cretaceous, even prior to their total extinction at the Cretaceous-Paleogene boundary. In contrast, the fossilised-birth-death model suggests that the dinosaurs may have been in decline in the Early Cretaceous, but had returned to net diversification by the Late Cretaceous. One possible reason for this is that the fossilised-birth-death model includes fossil sampling rate as a parameter, whereas the exponential coalescent model simply assumes that there is no relationship between the sampling process and species richness, which may not be the case. Understanding the assumptions of the models we apply, and how well these assumptions fit our data, is therefore essential in Bayesian phylodynamics.
+If we compare the skylines generated using our piecewise exponential growth coalescent and fossilised-birth-death models, we can see that they do not reconstruct the same diversification trajectory for dinosaurs across their evolutionary history. The piecewise exponential growth coalescent model indicates that the dinosaurs were experiencing negative diversification (net loss of species) during the Late Cretaceous, even prior to their total extinction at the Cretaceous-Paleogene boundary. In contrast, the fossilised-birth-death model suggests that the dinosaurs may have been in decline in the Early Cretaceous, but had returned to net diversification by the Late Cretaceous. One possible reason for this is that the fossilised-birth-death model includes fossil sampling rate as a parameter, whereas the exponential coalescent model simply assumes that there is no relationship between the sampling process and species richness, which may not be the case. Understanding the assumptions of the models we apply, and how well these assumptions fit our data, is therefore essential in Bayesian phylodynamics.
 
 ----
 
