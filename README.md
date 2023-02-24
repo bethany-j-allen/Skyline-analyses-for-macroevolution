@@ -541,9 +541,9 @@ The next argument to note is `conditionOnRoot="true"`. **Conditioning** refers t
 The first of these settings is determined using the `conditionOnRoot` parameter. When `conditionOnRoot="true"`, we are telling BDSKY to commence our evolutionary process at the root of the tree; in macroevolution, this corresponds to our first speciation event, when the most recent common ancestor (MRCA) of our clade first diverged into two daughter species. Using this setting allows us to place a prior on the timing of the root of the tree. When `conditionOnRoot="false"`, we are telling BDSKY to instead commence our evolutionary process at the origin; this is when the first branch in the tree initially appeared. In doing so, we are including this initial branch within our clade. Using this setting allows us to place a prior on the timing of the origin, rather than the root. As we discussed before, we intend to place a prior on the origin, and consider this initial branch to be our first dinosaur, meaning that it should be included in our evolutionary process. We therefore want to set `conditionOnRoot="false"`. This is the default setting, and so we can simply remove this parameter specification from our XML.
 
 <figure>
-	<a id="fig:a"></a>
+	<a id="fig:7"></a>
 	<img style="width:75%;" src="figures/Conditioning schematic.png" alt="">
-	<figcaption>Figure a: A schematic showing the difference between conditioning on the root and conditioning on the origin. This setting determines whether the evolutionary process commences at the start of the initial branch, or the first observed speciation event. </figcaption>
+	<figcaption>Figure 7: A schematic showing the difference between conditioning on the root and conditioning on the origin. This setting determines whether the evolutionary process commences at the start of the initial branch, or the first observed speciation event. </figcaption>
 </figure>
 		
 The second way to condition our BDSKY model is to ensure that the model produces at least one sample (is observable). Depending on the relevant type of sampling, we can either use `conditionOnRhoSampling` or `conditionOnSurvival`: the former assumes at least one extant sample, while the latter assumes at least one sample of either type (an extant sample or an observed fossil). It's worth noting that when `conditionOnRoot="true"`, the model assumes that our samples are drawn from both sides of the root, and therefore that the MRCA in the sampled tree corresponds to the MRCA in the "true" tree. As our phylogeny of non-avian dinosaurs only includes extinct species, we will set `conditionOnRhoSampling="false"` and `conditionOnSurvival="true"`.
@@ -825,9 +825,9 @@ ggplot(data = diversification_data, aes(x = interval, y = median, ymin = lower,
  ```
 		
 <figure>
-	<a id="fig:7"></a>
+	<a id="fig:8"></a>
 	<img style="width:50%;" src="figures/Coalescent_errors.png" alt="">
-	<figcaption>Figure 7: The exponential coalescent diversification rate skyline plotted using error bars.</figcaption>
+	<figcaption>Figure 8: The exponential coalescent diversification rate skyline plotted using error bars.</figcaption>
 </figure>
  
 Alternatively, by extending our estimates across the temporal duration of each time interval, we can plot the diversification rate over time as a **piecewise constant** skyline.
@@ -853,9 +853,9 @@ ggplot(to_plot) +
  ```
 		
 <figure>
-	<a id="fig:8"></a>
+	<a id="fig:9"></a>
 	<img style="width:50%;" src="figures/Coalescent_ribbon.png" alt="">
-	<figcaption>Figure 8: The exponential coalescent diversification rate skyline plotted using a ribbon plot.</figcaption>
+	<figcaption>Figure 9: The exponential coalescent diversification rate skyline plotted using a ribbon plot.</figcaption>
 </figure>
  
 We can also investigate the other parameter estimated in the model, the estimated **effective population size** at the start of the coalescent process (which is the youngest end of our time interval). This estimate is a measure of the **total species diversity** of non-avian dinosaurs just before the Cretaceous-Paleogene boundary (although, as mentioned before, under the assumption of a Wright-Fisher population, so this value should be interpreted with caution). Again, we can calculate the median and 95% HPD values for our diversity estimate.
@@ -876,9 +876,9 @@ print(pop_data)
 ```
 		      
 <figure>
-	<a id="fig:9"></a>
+	<a id="fig:10"></a>
 	<img style="width:25%;" src="figures/Coalescent pop table.png" alt="">
-	<figcaption>Figure 9: The estimated effective population size of the dinosaur clade just before the Cretaceous-Paleogene boundary.</figcaption>
+	<figcaption>Figure 10: The estimated effective population size of the dinosaur clade just before the Cretaceous-Paleogene boundary.</figcaption>
 </figure>
 
 ### The Fossilised-Birth-Death model results
@@ -978,9 +978,9 @@ ggplot(data = samp_data, aes(x = interval, y = median, ymin = lower,
 ```
 	
 <figure>
-	<a id="fig:10"></a>
+	<a id="fig:11"></a>
 	<img style="width:50%;" src="figures/FBD errors.png" alt="">
-	<figcaption>Figure 10: The fossilsed-birth-death diversification rate skyline plotted using error bars.</figcaption>
+	<figcaption>Figure 11: The fossilsed-birth-death diversification rate skyline plotted using error bars.</figcaption>
 </figure>
 
 ...but also as **piecewise constant** skylines using ribbon plots.
@@ -1015,9 +1015,9 @@ ggplot(samp_plot) +
 ```
 		  
 <figure>
-	<a id="fig:11"></a>
+	<a id="fig:12"></a>
 	<img style="width:50%;" src="figures/FBD ribbon.png" alt="">
-	<figcaption>Figure 11: The fossilsed-birth-death diversification rate skyline plotted using a ribbon plot.</figcaption>
+	<figcaption>Figure 12: The fossilsed-birth-death diversification rate skyline plotted using a ribbon plot.</figcaption>
 </figure>
 
 We can also examine the last parameter in our fossilised-birth-death model, which is the **origin** of the dinosaurian clade. Note that we add 66 to our estimates to account for the difference between the youngest tip (at the Cretaceous-Paleogene boundary) and the present day. If we didn't add 66 to our estimates we would be estimating the duration of non-avian dinosaurs on Earth, instead of the time of their origin. 
@@ -1038,9 +1038,9 @@ print(origin_data)
 ```
 			 
 <figure>
-	<a id="fig:12"></a>
+	<a id="fig:13"></a>
 	<img style="width:25%;" src="figures/FBD origin table.png" alt="">
-	<figcaption>Figure 12: The estimated origin of dinosaurs (in Ma).</figcaption>
+	<figcaption>Figure 13: The estimated origin of dinosaurs (in Ma).</figcaption>
 </figure>
 	
 Our fossilised-birth-death model therefore suggests that dinosaurs originated around 246Ma, which would be during the Middle Triassic. 
