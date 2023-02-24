@@ -478,9 +478,7 @@ Following this we see a description of our three inferred rates: birth, death an
 
 >Replace all instances of `rho` in the XML with `sampling`. There should be eight. This is most easily (and reliably) done using the `Find & Replace` functionality.
 
-To our three rates we will also add a fourth parameter, `origin`. This denotes the time at which the evolutionary process started, in our case the origin of the dinosaur clade. Note that this time is always older than the time of the most recent common ancestor (MRCA) of the clade. Whereas the time of the MRCA denotes the first speciation event in the clade, the origin denotes the appearance of the first dinosaur, i.e. the start of the root branch leading to the MRCA. It is also worth keeping in mind that the MRCA of the phylogeny we're using, from {% cite Lloyd2008 --file Skyline-analyses-for-macroevolution/master-refs.bib %}, may not be the MRCA of the entire dinosaur clade. Since the tree is a _sampled_ tree and doesn't contain _all_ dinosaur species, it is possible that its MRCA is more recent than the MRCA of the _whole_ dinosaur clade.
-
-In this section we need to set the limits of our origin time and its initial value. BEAST2 assumes that time runs from the present backwards (as is the case in our **Exponential Coalescent** model), so we will set our origin's lower limit to 0 (the age of the youngest tip), and to be maximally conservative, its upper limit to `Infinity`. We will set the starting value to 200 (200 million years before the youngest tip), which corresponds to an age of approximately 200 + 66 = 266Ma (if our youngest tip lies at the Cretaceous-Paleogene boundary, when non-avian dinosaurs are thought to have become extinct). This would place the origin of dinosaurs during the middle Permian, which is perhaps a little earlier than most palaeontologists would speculate (late Permian to Early Triassic, e.g. **ADD CITATION**), but is certainly adequate for our first iteration.
+To our three rates we will also add a fourth parameter, `origin`. This denotes the time at which the evolutionary process started, in our case the origin of the dinosaur clade. Here we need to set the limits of our origin time and its initial value. BEAST2 assumes that time runs from the present backwards (as is the case in our **Exponential Coalescent** model), so we will set our origin's lower limit to 0 (the age of the youngest tip), and to be maximally conservative, its upper limit to `Infinity`. We will set the starting value to 200 (200 million years before the youngest tip), which corresponds to an age of approximately 200 + 66 = 266Ma (if our youngest tip lies at the Cretaceous-Paleogene boundary, when non-avian dinosaurs are thought to have become extinct). This would place the origin of dinosaurs during the middle Permian, which is perhaps a little earlier than most palaeontologists would speculate (Early to Middle Triassic, e.g. {% cite Brusatte2010 Langer2010 --file Skyline-analyses-for-macroevolution/master-refs.bib %}), but is certainly adequate for our first iteration.
 
 >Paste in the `origin` line to the end of the `parameter` block:
 >
@@ -499,7 +497,7 @@ In this section we need to set the limits of our origin time and its initial val
 ></state>
 >```
 
-Note that each of our rate parameters have 4 **dimensions** but we do not specify this value for our origin; while our **piecewise constant** rates can change three times in each iteration (resulting in four fixed values), only a single origin value is needed, and we therefore do not need to specify its number of dimensions (as 1).
+Note that each of our rate parameters have 4 **dimensions** but that we do not specify this value for our origin; while our **piecewise constant** rates will have four values in each iteration (one for each time interval), only a single origin value is needed, and we therefore do not need to specify its number of dimensions (as 1).
 
 As before, the `init` block is not needed for this analysis.
 
@@ -606,7 +604,7 @@ And with that our model is complete! In summary, the model should now read (with
 	</distribution>
 ```
 
-The next part of our XML specifies the shape of our prior distributions. As long as you changed all of the `rho` references to `sampling` previously, we don't need to modify the priors we already have any further; we provided all of the necessary information in BEAUti. We do, however, need to add a prior on our `origin`. You may remember that when specifying the parameter, we set our starting value to 200 (corresponding to 266Ma, which is on the older side of expert estimates for the origin of dinosaurs). To keep things simple, we will set the origin prior to a **uniform** distribution between 0 and 200.
+The next part of our XML specifies the shape of our prior distributions. As long as you changed all of the `rho` references to `sampling` previously, we don't need to modify the priors we already have any further; we provided all of the necessary information in BEAUti. We do, however, need to add a prior on our `origin`. You may remember that when specifying the parameter, we set our starting value to 200 (corresponding to 266Ma). To keep things simple, we will set the origin prior to a **uniform** distribution between 0 and 200.
 
 >Add an `origin` prior to the `priors` block:
 >
