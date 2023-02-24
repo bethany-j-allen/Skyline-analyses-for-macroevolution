@@ -383,7 +383,7 @@ With that, our XML is ready!
 
 We can now run the analysis in BEAST2. It's important to have `Lloyd.tree` saved somewhere that BEAST2 can access it.
 
->Download and save `Lloyd.tree` in the same folder as your BEAST2 program. Open the program and select `dinosaur_coal.xml` (or `dinosaur_coal_final.xml` if you're using our ready-made version). If you have **BEAGLE** installed tick the box to **Use BEAGLE library if available**, which will make the run faster. Hit **Run** to start the analysis.
+>Download and save `Lloyd.tree` in the same folder as your BEAST2 program. Open the program and select `dinosaur_coal.xml` (or `dinosaur_coal_final.xml` if you're using our ready-made version). Hit **Run** to start the analysis.
 >
 >**OR**
 >
@@ -734,7 +734,7 @@ Our XML file is finally ready!
 
 We can now run the analysis in BEAST2. As with the exponential coalescent model, it's important to have `Lloyd.tree` saved somewhere that BEAST2 can access it (check back to the instructions for running the **exponential coalescent** XML if you skipped this).
 
->Open the program and select `dinosaur_BDSKY.xml` (or `dinosaur_BDSKY_final.xml` if you're using our ready-made version). If you have **BEAGLE** installed tick the box to **Use BEAGLE library if available**, which will make the run faster. Hit **Run** to start the analysis.
+>Open the program and select `dinosaur_BDSKY.xml` (or `dinosaur_BDSKY_final.xml` if you're using our ready-made version). Hit **Run** to start the analysis.
 >
 >**OR**
 >
