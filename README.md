@@ -754,14 +754,16 @@ Next to the file names, you can see the number of states in the logs (the length
 		
 ## Visualising the results
 
-We can now use **R** to plot our skylines. The log files are relatively easy to handle in R, so we have provided custom code for this rather than using an R package, although this code does require the **tidyverse** to be installed (specifically, we will use **dplyr** and **ggplot2**).
+We can now use **R** to plot our skylines. We will be using **coda** to summarise the log files, and the **tidyverse** (specifically, we will use **dplyr** and **ggplot2**) for wrangling and plotting.
 
-The first step is to install the `tidyverse` if you haven't previously, and then to load the package.
+The first step is to install the `tidyverse` and `coda` packages if you haven't previously, and then to load the package.
 
 ```R
 install.packages("tidyverse")
+install.packages("coda")
 
 library(tidyverse)
+library(coda)
 ```
 
 ### The Exponential Coalescent model results
@@ -778,19 +780,18 @@ coal_file <- "dinosaur_coal.log"
 coalescent <- read.table(coal_file, header = T) %>% slice_tail(prop = 0.9)
 ```
 
-The next job is to summarise the values across the remaining iterations in the log. We will pivot the table so that our diversification rate estimates sit in a single column, then estimate our median and 95% **highest posterior density** (HPD interval; a Bayesian analogue to a confidence interval) values within each time bin.
+The next job is to summarise the values across the remaining iterations in the log. We will estimate our 95% **highest posterior density** (HPD interval; a Bayesian analogue to a confidence interval) values using coda, and our median values using base R, within each time bin.
 
 ```R
-#Pivot the table to stack the rate estimates into a single column
-coalescent <- pivot_longer(coalescent, c(growthRate1, growthRate2, growthRate3,
-                                   growthRate4),
-                         names_to = "time_bin", names_prefix = "growthRate")
+#Tell coda that this is an mcmc file, and calculate 95% HPD values
+coalescent_mcmc <- as.mcmc(coalescent)
+summary_data <- as.data.frame(HPDinterval(coalescent_mcmc))
 
-#Summarise the rates in the log
-coalescent_summary <- coalescent %>% group_by(time_bin) %>%
-  summarise(median = median(value),
-            lowCI = quantile(value, 0.025),
-            highCI = quantile(value, 0.975))
+#Add median values to data frame
+summary_data$median <- apply(coalescent, 2, median)
+
+#Select growth rate parameters
+diversification_data <- summary_data[6:9,]
 ```
 
 We will also add a column which converts the numbers of our time bins into their interval names: as coalescent models run from the phylogeny tips backwards in time, our "first" time bin is the youngest and our "fourth" time bin is the oldest. We will also tell R that these intervals have a set order, and specify it.
@@ -812,10 +813,10 @@ We can plot our skyline as error bars, with a discrete bar showing the range of 
 
 ```R
 #Plot diversification skyline as error bars
-ggplot(data = coalescent_summary, aes(x = interval, y = median, ymin = lowCI,
-                             ymax = highCI)) +
+ggplot(data = diversification_data, aes(x = interval, y = median, ymin = lower,
+                             ymax = upper)) +
   geom_point(size = 1.5) +
-  geom_errorbar(size = 1, width = 0.5) +
+  geom_errorbar(linewidth = 1, width = 0.5) +
   scale_colour_manual(values = c("black")) +
   geom_hline(aes(yintercept = 0), colour = "black") +
   scale_x_discrete(labels = function(x) str_wrap(x, width = 10)) +
@@ -839,11 +840,11 @@ interval <- c(rep("Triassic", ((252 - 202) + 1)),
               rep("Early Cretaceous", ((145 - 101) + 1)),
               rep("Late Cretaceous", ((100 - 66) + 1)))
 age_table <- as.data.frame(cbind(ages, interval))
-to_plot <- left_join(coalescent_summary, age_table, by = "interval")
+to_plot <- left_join(age_table, diversification_data, by = "interval")
 to_plot$ages <- as.numeric(to_plot$ages)
 
 ggplot(to_plot) +
-  geom_ribbon(aes(x = ages, ymin = lowCI, ymax = highCI), alpha = 0.5) +
+  geom_ribbon(aes(x = ages, ymin = lower, ymax = upper), alpha = 0.5) +
   geom_line(aes(x = ages, y = median)) +
   scale_x_reverse() +
   geom_hline(aes(yintercept = 0), colour = "black") +
@@ -857,16 +858,20 @@ ggplot(to_plot) +
 	<figcaption>Figure 8: The exponential coalescent diversification rate skyline plotted using a ribbon plot.</figcaption>
 </figure>
  
-We can also investigate the other parameter estimated in the model, the estimated **effective population size** at the start of the coalescent process (which is the youngest end of our time interval). This estimate is a measure of the **total species diversity** of non-avian dinosaurs just before the Cretaceous-Paleogene boundary (although, as mentioned before, under the assumption of a Wright-Fisher population, so should be interpreted with caution). Again, we can calculate the median and 95% HPD values for our diversity estimates.
+We can also investigate the other parameter estimated in the model, the estimated **effective population size** at the start of the coalescent process (which is the youngest end of our time interval). This estimate is a measure of the **total species diversity** of non-avian dinosaurs just before the Cretaceous-Paleogene boundary (although, as mentioned before, under the assumption of a Wright-Fisher population, so this value should be interpreted with caution). Again, we can calculate the median and 95% HPD values for our diversity estimate.
 
 ```R
-#Extract estimated diversity
-pop_data <- pull(coalescent, "ePopSize")
+#Select estimated species diversity at end of time interval
+population <- pull(coalescent, "ePopSize")
 
-#Summarise the diversity estimates in the log
-pop_data <- as.data.frame(rbind(c(median(pop_data), quantile(pop_data, 0.025),
-                                  quantile(pop_data, 0.975))))
-colnames(pop_data) <- c("median", "lowCI", "highCI")
+#Tell coda that this is an mcmc file, and calculate 95% HPD values
+pop_mcmc <- as.mcmc(population)
+pop_data <- as.data.frame(HPDinterval(pop_mcmc))
+
+#Add median values to data frame
+pop_data$median <- median(population)
+
+#Display estimated species diversity and HPDs
 print(pop_data)
 ```
 		      
@@ -890,7 +895,7 @@ fbd_file <- "dinosaur_BDSKY.log"
 fbd <- read.table(fbd_file, header = T) %>% slice_tail(prop = 0.9)
 ```
 
-We parameterised this model using **birth**, **death** and **fossil sampling** rates, so these are the parameters included in our log. However, our exponential coalescent model estimated **diversification** rates. If we want to make the fairest comparison between the two models, we should do so using the same parameters. Fortunately, it is straightforward to convert birth and death rates into diversification rates: simply, {% eqinline \textrm{diversification} = \mathrm{births} - \mathrm{deaths} %}. We can also calculate **turnover**, which describes the average duration of lineages (species) in our clade. Turnover is the ratio between births and deaths, so we will calculate it using {% eqinline \textrm{turnover} = \frac{\mathrm{births} }{ \mathrm{deaths}} %}.
+We parameterised this model using **birth**, **death** and **fossil sampling** rates, so these are the parameters included in our log. However, our exponential coalescent model estimated **diversification** rates. If we want to make the fairest comparison between the two models, we should do so using the same parameters. Fortunately, it is straightforward to convert birth and death rates into diversification rates: simply, {% eqinline \textrm{diversification} = \mathrm{births} - \mathrm{deaths} %}.
 
 ```R
 #Calculate diversification and turnover
@@ -900,59 +905,35 @@ death_rates <- select(fbd, starts_with("deathRate"))
 div_rates <- birth_rates - death_rates
 colnames(div_rates) <- paste0("divRate.",
                               seq(1:ncol(div_rates)))
-
-TO_rates <- birth_rates / death_rates
-colnames(TO_rates) <- paste0("TORate.",
-                             seq(1:ncol(TO_rates)))
 ```
 
-We can then calculate the median and 95% HPD values for our diversification and turnover estimates, just as we did before. This time, note that because the birth-death model runs from the origin forward-in-time, our "first" time bin is the oldest and our "fourth" time bin is the youngest. Even though we flipped the time direction of the break point times when setting up the XML file (using the `reverseTimeArrays` vector to change the direction of `birthRateChangeTimes` etc.), this has no effect on the order in which time bins are logged in the log file.
+We can then calculate the median and 95% HPD values for our diversification estimates, just as we did before. This time, note that because the birth-death model runs from the origin forward-in-time, our "first" time bin is the oldest and our "fourth" time bin is the youngest. Even though we flipped the time direction of the break point times when setting up the XML file (using the `reverseTimeArrays` vector to change the direction of `birthRateChangeTimes` etc.), this has no effect on the order in which time bins are logged in the log file.
 
 ```R
-#Pivot the table to stack the rate estimates into a single column
-div_data <- pivot_longer(div_rates,
-                         c(divRate.1, divRate.2, divRate.3, divRate.4),
-                         names_to = "time_bin", names_prefix = "divRate.")
+#Tell coda that this is an mcmc file, and calculate 95% HPD values
+div_mcmc <- as.mcmc(div_rates)
+div_data <- as.data.frame(HPDinterval(div_mcmc))
 
-#Summarise the diversification estimates
-div_data <- div_data %>% group_by(time_bin) %>%
-  summarise(median = median(value),
-            lowCI = quantile(value, 0.025),
-            highCI = quantile(value, 0.975))
+#Add median values to data frame
+div_data$median <- apply(div_rates, 2, median)
 
 #Add interval names
 div_data$interval <- c("Triassic", "Jurassic", "Early Cretaceous",
                        "Late Cretaceous")
-
-#Pivot the table to stack the rate estimates into a single column
-turn_data <- pivot_longer(TO_rates, c(TORate.1, TORate.2, TORate.3, TORate.4),
-                          names_to = "time_bin", names_prefix = "TORate.")
-
-#Summarise the turnover estimates
-turn_data <- turn_data %>% group_by(time_bin) %>%
-  summarise(median = median(value),
-            lowCI = quantile(value, 0.025),
-            highCI = quantile(value, 0.975))
-
-#Add interval names
-turn_data$interval <- c("Triassic", "Jurassic", "Early Cretaceous",
-                        "Late Cretaceous")
 ```
 
 We can also use this same process to examine our fossil sampling rates.
 
 ```R
-#Pivot the table to stack the rate estimates into a single column
-samp_data <- select(fbd, starts_with("sampling"))
-samp_data <- pivot_longer(samp_data, c(samplingBDS.1, samplingBDS.2,
-                                       samplingBDS.3, samplingBDS.4),
-                          names_to = "time_bin", names_prefix = "samplingBDS.")
+#Select sampling estimates from log
+samp_log <- select(fbd, starts_with("samplingBDS"))
 
-#Summarise log
-samp_data <- samp_data %>% group_by(time_bin) %>%
-  summarise(median = median(value),
-            lowCI = quantile(value, 0.025),
-            highCI = quantile(value, 0.975))
+#Tell coda that this is an mcmc file, and calculate 95% HPD values
+samp_mcmc <- as.mcmc(samp_log)
+samp_data <- as.data.frame(HPDinterval(samp_mcmc))
+
+#Add median values to data frame
+samp_data$median <- apply(samp_log, 2, median)
 
 #Add interval names
 samp_data$interval <- c("Triassic", "Jurassic", "Early Cretaceous",
@@ -967,10 +948,6 @@ div_data$interval <- factor(div_data$interval,
                             levels = c("Triassic", "Jurassic",
                                        "Early Cretaceous", "Late Cretaceous"))
 
-turn_data$interval <- factor(turn_data$interval,
-                             levels = c("Triassic", "Jurassic",
-                                        "Early Cretaceous", "Late Cretaceous"))
-
 samp_data$interval <- factor(samp_data$interval,
                              levels = c("Triassic", "Jurassic",
                                         "Early Cretaceous", "Late Cretaceous"))
@@ -979,31 +956,20 @@ samp_data$interval <- factor(samp_data$interval,
 Again we have provided code so that the skylines can be plotted as discrete error bars...
 
 ```R
-#Plot skylines as error bars
-ggplot(data = div_data, aes(x = interval, y = median, ymin = lowCI,
-                                      ymax = highCI)) +
+ggplot(data = div_data, aes(x = interval, y = median, ymin = lower,
+                                      ymax = upper)) +
   geom_point(size = 1.5) +
-  geom_errorbar(size = 1, width = 0.5) +
+  geom_errorbar(linewidth = 1, width = 0.5) +
   scale_colour_manual(values = c("black")) +
   geom_hline(aes(yintercept = 0), colour = "black") +
   scale_x_discrete(labels = function(x) str_wrap(x, width = 10)) +
   labs(x = "Interval", y = "Diversification rate") +
   theme_classic(base_size = 17)
 
-ggplot(data = turn_data, aes(x = interval, y = median, ymin = lowCI,
-                            ymax = highCI)) +
+ggplot(data = samp_data, aes(x = interval, y = median, ymin = lower,
+                            ymax = upper)) +
   geom_point(size = 1.5) +
-  geom_errorbar(size = 1, width = 0.5) +
-  scale_colour_manual(values = c("black")) +
-  geom_hline(aes(yintercept = 1), colour = "black") +
-  scale_x_discrete(labels = function(x) str_wrap(x, width = 10)) +
-  labs(x = "Interval", y = "Turnover rate") +
-  theme_classic(base_size = 17)
-
-ggplot(data = samp_data, aes(x = interval, y = median, ymin = lowCI,
-                            ymax = highCI)) +
-  geom_point(size = 1.5) +
-  geom_errorbar(size = 1, width = 0.5) +
+  geom_errorbar(linewidth = 1, width = 0.5) +
   scale_colour_manual(values = c("black")) +
   geom_hline(aes(yintercept = 0), colour = "black") +
   scale_x_discrete(labels = function(x) str_wrap(x, width = 10)) +
@@ -1020,7 +986,6 @@ ggplot(data = samp_data, aes(x = interval, y = median, ymin = lowCI,
 ...but also as **piecewise constant** skylines using ribbon plots.
 
 ```R
-#Plot skylines as a ribbon plot
 ages <- seq.int(252, 66)
 interval <- c(rep("Triassic", ((252 - 202) + 1)),
               rep("Jurassic", ((201 - 146) + 1)),
@@ -1028,30 +993,20 @@ interval <- c(rep("Triassic", ((252 - 202) + 1)),
               rep("Late Cretaceous", ((100 - 66) + 1)))
 age_table <- as.data.frame(cbind(ages, interval))
 
-div_plot <- left_join(div_data, age_table, by = "interval")
+div_plot <- left_join(age_table, div_data, by = "interval")
 div_plot$ages <- as.numeric(div_plot$ages)
 ggplot(div_plot) +
-  geom_ribbon(aes(x = ages, ymin = lowCI, ymax = highCI), alpha = 0.5) +
+  geom_ribbon(aes(x = ages, ymin = lower, ymax = upper), alpha = 0.5) +
   geom_line(aes(x = ages, y = median)) +
   scale_x_reverse() +
   geom_hline(aes(yintercept = 0), colour = "black") +
   xlab("Age (Ma)") + ylab("Diversification rate") +
   theme_classic(base_size = 17)
 
-turn_plot <- left_join(turn_data, age_table, by = "interval")
-turn_plot$ages <- as.numeric(turn_plot$ages)
-ggplot(turn_plot) +
-  geom_ribbon(aes(x = ages, ymin = lowCI, ymax = highCI), alpha = 0.5) +
-  geom_line(aes(x = ages, y = median)) +
-  scale_x_reverse() +
-  geom_hline(aes(yintercept = 1), colour = "black") +
-  xlab("Age (Ma)") + ylab("Turnover rate") +
-  theme_classic(base_size = 17)
-
-samp_plot <- left_join(samp_data, age_table, by = "interval")
+samp_plot <- left_join(age_table, samp_data, by = "interval")
 samp_plot$ages <- as.numeric(samp_plot$ages)
 ggplot(samp_plot) +
-  geom_ribbon(aes(x = ages, ymin = lowCI, ymax = highCI), alpha = 0.5) +
+  geom_ribbon(aes(x = ages, ymin = lower, ymax = upper), alpha = 0.5) +
   geom_line(aes(x = ages, y = median)) +
   scale_x_reverse() +
   geom_hline(aes(yintercept = 0), colour = "black") +
@@ -1065,17 +1020,20 @@ ggplot(samp_plot) +
 	<figcaption>Figure 11: The fossilsed-birth-death diversification rate skyline plotted using a ribbon plot.</figcaption>
 </figure>
 
-We can also examine the last parameter in our fossilised-birth-death model, which is the **origin** of our clade, the dinosaurs. Note that we add 66 to our estimates to account for the difference between the youngest tip (at the Cretaceous-Paleogene boundary) and the present day. If we didn't add 66 to our estimates we would be estimating the duration of non-avian dinosaurs on Earth, instead of the time of their origin. 
+We can also examine the last parameter in our fossilised-birth-death model, which is the **origin** of the dinosaurian clade. Note that we add 66 to our estimates to account for the difference between the youngest tip (at the Cretaceous-Paleogene boundary) and the present day. If we didn't add 66 to our estimates we would be estimating the duration of non-avian dinosaurs on Earth, instead of the time of their origin. 
 
 ```R
-#Extract origin data
-origin_data <- pull(fbd, "origin")
+#Select origin data as an mcmc file, and calculate 95% HPD values
+origin_mcmc <- as.mcmc(pull(fbd, "origin"))
+origin_data <- as.data.frame(HPDinterval(origin_mcmc))
 
-#Summarise the origin estimates in the log
-origin_data <- as.data.frame(rbind(c((median(origin_data) + 66),
-                                     (quantile(origin_data, 0.025) + 66),
-                                     (quantile(origin_data, 0.975) + 66))))
-colnames(origin_data) <- c("median", "lowCI", "highCI")
+#Add median value to data frame
+origin_data$median <- median(fbd$origin)
+
+#Convert to time before present, rather than time before K-Pg boundary
+origin_data <- origin_data + 66
+
+#Display estimated origin and HPDs
 print(origin_data)
 ```
 			 
