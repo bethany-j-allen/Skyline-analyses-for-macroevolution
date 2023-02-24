@@ -3,6 +3,7 @@
 
 #Install the `tidyverse` and `coda` packages if you haven't already
 install.packages("tidyverse")
+install.packages("coda")
 
 library(tidyverse)
 library(coda)
