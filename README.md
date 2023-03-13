@@ -796,12 +796,12 @@ We will also add a column which converts the numbers of our time bins into their
 
 ```R
 #Add the interval names
-coalescent_summary$interval <- c("Late Cretaceous", "Early Cretaceous",
+diversification_data$interval <- c("Late Cretaceous", "Early Cretaceous",
                                  "Jurassic", "Triassic")
 				 
 
 #Ensure that the time intervals plot in the correct order
-coalescent_summary$interval <- factor(coalescent_summary$interval,
+diversification_data$interval <- factor(diversification_data$interval,
                                       levels = c("Triassic", "Jurassic",
                                                  "Early Cretaceous",
                                                  "Late Cretaceous"))
