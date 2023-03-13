@@ -50,9 +50,9 @@ The aim of this tutorial is to:
 - Highlight the differences between piecewise exponential growth coalescent and fossilised-birth-death skyline models.
 
 If you have limited time, or only want to run part of the tutorial, we estimate that it should take:
-Set up piecewise exponential growth coalescent - 30-45 mins
-Set up fossilised-birth-death skyline - 30-45 mins (20-30 mins if you have already set up the other analysis)
-Analyse outputs - 20 mins
+- Set up piecewise exponential growth coalescent - 30-45 mins
+- Set up fossilised-birth-death skyline - 30-45 mins (20-30 mins if you have already set up the other analysis)
+- Analyse outputs - 20 mins
 
 ## The data
 
