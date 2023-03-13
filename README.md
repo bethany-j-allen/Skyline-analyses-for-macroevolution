@@ -49,9 +49,14 @@ The aim of this tutorial is to:
 - Develop skills in XML hacking;
 - Highlight the differences between piecewise exponential growth coalescent and fossilised-birth-death skyline models.
 
+If you have limited time, or only want to run part of the tutorial, we estimate that it should take:
+Set up piecewise exponential growth coalescent - 30-45 mins
+Set up fossilised-birth-death skyline - 30-45 mins (20-30 mins if you have already set up the other analysis)
+Analyse outputs - 20 mins
+
 ## The data
 
-We will be inferring our skyline parameters using a ready-made phylogeny containing 420 dinosaur species, published by {% cite Lloyd2008 --file Skyline-analyses-for-macroevolution/master-refs.bib %}. This phylogeny is a "supertree", created using an informal method to collate several smaller dinosaur phylogenies into a larger one. Supertrees are typically cladograms, and must be timescaled using fossil data to estimate their branch lengths. The branch lengths we use here were inferred by {% cite Sakamoto2016 --file Skyline-analyses-for-macroevolution/master-refs.bib %}: they used fossil occurrences from the [Paleobiology Database](http://paleobiodb.org) to infer the midpoint of the temporal range of each tip, and timescaled the phylogeny using the "equal" method, which distributes time evenly between the available branches.
+We will be inferring our skyline parameters using a ready-made phylogeny containing 420 dinosaur species, published by {% cite Lloyd2008 --file Skyline-analyses-for-macroevolution/master-refs.bib %}. This phylogeny is a "supertree", created using an informal method to collate several smaller dinosaur phylogenies into a larger one. Supertrees are typically cladograms, and must be timescaled using fossil data to estimate their branch lengths. The branch lengths we use here were inferred by {% cite Sakamoto2016 --file Skyline-analyses-for-macroevolution/master-refs.bib %}: they used fossil occurrences from the [Paleobiology Database](http://paleobiodb.org) to define the temporal range of each species, used the midpoint of the temporal range for each tip date, and timescaled the phylogeny using the "equal" method, which distributes time evenly between the available branches.
 
 ## Install BEAST2 packages
 
@@ -73,7 +78,7 @@ After installing a package, it is on your computer, but BEAUti is unable to load
 
 ## Setting up the Piecewise Exponential Growth Coalescent analysis
 
-We will start with the simpler of the two models, the **piecewise exponential growth coalescent**. This model is somewhat similar in construction to the **coalescent Bayesian skyline** model used in the **Skyline plots** tutorial, but instead of assuming that the size of the population remains constant during our individual time intervals, we instead assume that they are experiencing **exponential growth or decline** at a constant rate throughout the interval, with instantaneous shifts in the growth rate between intervals. The advantage of using this model is that while the constant coalescent estimates **constant effective population sizes** within each time interval, we instead estimate **diversification rates** for each of the time intervals, which is what we would like to infer for our dinosaurs. Furthermore, whereas the coalescent Bayesian skyline model only allows interval boundaries to coincide with coalescent (or branching) times in the tree, we will use arbitrary time intervals, which will allow us to directly estimate diversification rates during geological intervals of interest. 
+We will start with the simpler of the two models, the **piecewise exponential growth coalescent**. This model is somewhat similar in construction to the **coalescent Bayesian skyline** model used in the **Skyline plots** tutorial, but instead of assuming that the size of the population remains constant during our individual time intervals, we instead assume that they are experiencing **exponential growth or decline** at a constant rate throughout the interval, with instantaneous shifts in the growth rate between intervals. The advantage of using this model is that while the constant coalescent estimates **constant effective population sizes** within each time interval, we instead estimate **diversification rates** for each of the time intervals, which is what we would like to infer for our dinosaurs. Furthermore, whereas the coalescent Bayesian skyline model only allows interval boundaries to coincide with coalescent (or branching) times in the tree, we will use predefined time intervals, which will allow us to directly estimate diversification rates during our geological intervals of interest. 
 
 Many of the features we will need in our XML files are not currently implemented in BEAUti. However, for both models, we will start our analyses by creating XML files in BEAUti which will then serve as a template for us to alter by hand ("hack") later. 
 
@@ -127,7 +132,7 @@ We can leave the rest of the tabs as they are and save the XML file. We want to 
 >
 >Change the **Chain Length** from 10’000’000 to 1’000’000.
 >
->Click on the arrow next to **tracelog** and change the **File Name** to `$(filebase).log` and set the Log Every to 1’000.
+>Click on the arrow next to **tracelog** and change the **File Name** to `$(filebase).log`, and make sure **Log Every** is set to 1’000.
 >
 >Leave all other settings at their default values and save the file as `dinosaur_coal.xml`.
 >
@@ -435,7 +440,7 @@ We can leave the rest of the tabs as they are and save the XML file. We will aga
 >
 >Change the **Chain Length** from 10’000’000 to 5’000’000.
 >
->Click on the arrow next to **tracelog** and change the **File Name** to `$(filebase).log` and set the **Log Every** to 1’000.
+>Click on the arrow next to **tracelog** and change the **File Name** to `$(filebase).log`, and make sure **Log Every** is set to 1’000.
 >
 >Leave all other settings at their default values and save the file as `dinosaur_BDSKY.xml`.
 
