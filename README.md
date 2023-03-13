@@ -1,6 +1,6 @@
 ---
 author: Bethany J. Allen
-level: Intermediate
+level: Professional
 title: Skyline analyses for macroevolution
 subtitle: Estimating evolutionary parameters from species phylogenies
 beastversion: 2.6.6
