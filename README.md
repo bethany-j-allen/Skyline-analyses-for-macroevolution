@@ -393,7 +393,7 @@ The analysis should take about 5 minutes to run. In the meantime, you can start 
 
 ## Setting up the Fossilised-Birth-Death Skyline analysis
 
-As with the piecewise exponential growth coalscent model, many of the features we will need in our fossilised-birth-death XML file are not yet implemented in BEAUti, but we will start our analyses by creating template XML files in BEAUti.
+As with the piecewise exponential growth coalescent model, many of the features we will need in our fossilised-birth-death XML file are not yet implemented in BEAUti, but we will start our analyses by creating template XML files in BEAUti.
 
 ### Creating the Analysis Files with BEAUti
 
@@ -483,7 +483,7 @@ To our three rates we will also add a fourth parameter, `origin`. This denotes t
 >Paste in the `origin` line to the end of the `parameter` block:
 >
 >```xml
->`<parameter id="origin.t:empty" spec="parameter.RealParameter" lower="0.0" name="stateNode" upper="Infinity">200.0</parameter>`
+><parameter id="origin.t:empty" spec="parameter.RealParameter" lower="0.0" name="stateNode" upper="Infinity">200.0</parameter>
 >```
 >
 >The `state` block should now look like this:
@@ -550,7 +550,7 @@ The second way to condition our BDSKY model is to ensure that the model produces
 		
 After this is the argument `contemp="true"`. When true, this means that all samples were collected at the same time (assumed to be the present, i.e. contemporaneous) and is the default setting for the **Birth Death Skyline Contemporary BDSParam** parameterization in BEAUti. Since our dataset is not homochronous, but we instead have heterochronous samples (in our case fossils that were deposited at different times), and no extant samples, we should set `contemp="false"`. However, the default for the fossilized-birth-death skyline is `contemp="false"`, so we can simply delete the line.
 		
-For our fossil sampling rate, we instead need to specify a different parameter, the `removalProbability`. When applying birth-death models to epidemiological datasets, sampling events are often assumed to be associated with removal; once patients have been sampled and their pathogens sequenced (which adds them to the phylogeny), it is assumed that they are removed from the infectious population, either through isolation or successful treatment and that they cannot subsequently infect anyone else. For our dataset, this assumption would prevent multiple fossils from existing for any single species, and mean that species for which fossils have been found could not be direct ancestors of other species in the phylogeny. In effect, this would be equivalent to assuming that fossils are only deposited at the time of exctinction. We can set the `removalProbability` to relax this assumption, and allow so-called "sampled ancestors". While the relevance of this assumption to supertrees is debatable, it is logical to set `removalProbability` to 0 for fossil phylogenies, since the probability is vanishingly small that any species went extinct exactly at the time a fossil was deposited (see {% cite Gavryushkina2014 --file Skyline-analyses-for-macroevolution/master-refs.bib %}).
+For our fossil sampling rate, we instead need to specify a different parameter, the `removalProbability`. When applying birth-death models to epidemiological datasets, sampling events are often assumed to be associated with removal; once patients have been sampled and their pathogens sequenced (which adds them to the phylogeny), it is assumed that they are removed from the infectious population, either through isolation or successful treatment and that they cannot subsequently infect anyone else. For our dataset, this assumption would prevent multiple fossils from existing for any single species, and mean that species for which fossils have been found could not be direct ancestors of other species in the phylogeny. In effect, this would be equivalent to assuming that fossils are only deposited at the time of extinction. We can set the `removalProbability` to relax this assumption, and allow so-called "sampled ancestors". While the relevance of this assumption to supertrees is debatable, it is logical to set `removalProbability` to 0 for fossil phylogenies, since the probability is vanishingly small that any species went extinct exactly at the time a fossil was deposited (see {% cite Gavryushkina2014 --file Skyline-analyses-for-macroevolution/master-refs.bib %}).
 
 >Change `contemp="true"` to `removalProbability="0.0"`.
 
