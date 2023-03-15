@@ -1067,8 +1067,3 @@ If we compare the skylines generated using our piecewise exponential growth coal
 
 {% bibliography --cited --file Skyline-analyses-for-macroevolution/master-refs.bib %}
 
-----
-
-# Citation
-
-If this tutorial has been useful to you, please consider citing {% cite Allen2023 --file Skyline-analyses-for-macroevolution/master-refs.bib %}, from which these analyses are taken.
