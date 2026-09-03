@@ -1,10 +1,23 @@
 ---
 author: Bethany J. Allen
-level: Professional
 title: Skyline analyses for macroevolution
 subtitle: Estimating evolutionary parameters from species phylogenies
-beastversion: 2.6.6
 tracerversion: 1.7.x
+beastversion_tutorial: 2.6.6
+workflow: Advanced analysis
+status: current
+keywords:
+- skyline
+- fossilized birth-death
+- coalescent
+- diversification
+packages:
+- BDSKY
+- feast
+domains:
+- macroevolution
+- palaeontology
+beastversion_package: '2.7'
 ---
 
 
